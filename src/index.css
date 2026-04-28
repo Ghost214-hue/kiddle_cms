@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #f5f0e8;
+    color: #3d2f1f;
+    font-family: 'DM Sans', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/50 backdrop-blur border border-tan/20 rounded-3xl;
+    box-shadow: 0 4px 24px rgba(100, 60, 20, 0.10);
+  }
+  .glass-card:hover {
+    box-shadow: 0 8px 32px rgba(100, 60, 20, 0.18);
+    @apply -translate-y-1 transition-all duration-300;
+  }
+  .btn-primary {
+    @apply bg-tan text-white rounded-full px-6 py-2.5 text-sm font-medium
+           hover:bg-tan-dark transition-colors duration-200;
+  }
+  .btn-ghost {
+    @apply bg-white/50 text-tan-dark border border-tan/30 rounded-full
+           px-6 py-2.5 text-sm hover:bg-white/80 transition-colors duration-200;
+  }
+}
