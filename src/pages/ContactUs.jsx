@@ -26,7 +26,7 @@ function InfoRow({ icon, label, value, href }) {
             fontSize: '13.5px', color: '#3d2010',
             fontFamily: "'DM Sans', sans-serif",
             textDecoration: 'none', lineHeight: 1.6,
-            transition: 'color 0.18s',
+            transition: 'color 0.18s', whiteSpace: 'pre-line',
           }}
             onMouseEnter={e => e.currentTarget.style.color = '#a0693a'}
             onMouseLeave={e => e.currentTarget.style.color = '#3d2010'}
@@ -37,7 +37,7 @@ function InfoRow({ icon, label, value, href }) {
           <p style={{
             fontSize: '13.5px', color: '#3d2010',
             fontFamily: "'DM Sans', sans-serif",
-            lineHeight: 1.6, margin: 0,
+            lineHeight: 1.6, margin: 0, whiteSpace: 'pre-line',
           }}>
             {value}
           </p>
@@ -57,8 +57,8 @@ function Field({ label, children }) {
         letterSpacing: '0.07em', textTransform: 'uppercase',
       }}>
         {label}
+        {children}
       </label>
-      {children}
     </div>
   )
 }

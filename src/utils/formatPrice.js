@@ -30,7 +30,7 @@ export function formatPriceRaw(amount) {
  * @returns {string}  e.g. "30%" — or '' if no discount
  */
 export function formatDiscount(original, sale) {
-  if (!original || !sale || sale >= original) return ''
+  if (!Number.isFinite(original) || !Number.isFinite(sale) || sale >= original) return ''
   const pct = Math.round((1 - sale / original) * 100)
   return `${pct}%`
 }
@@ -42,7 +42,7 @@ export function formatDiscount(original, sale) {
  * @returns {number}  e.g. 30
  */
 export function calcDiscountPct(original, sale) {
-  if (!original || !sale || sale >= original) return 0
+  if (!Number.isFinite(original) || !Number.isFinite(sale) || sale >= original) return 0
   return Math.round((1 - sale / original) * 100)
 }
 
@@ -54,7 +54,7 @@ export function calcDiscountPct(original, sale) {
  * @returns {string}  e.g. "Save $7.50"
  */
 export function formatSavings(original, sale, currency = 'USD') {
-  if (!original || !sale || sale >= original) return ''
+  if (!Number.isFinite(original) || !Number.isFinite(sale) || sale >= original) return ''
   const saved = original - sale
   return `Save ${formatPrice(saved, currency)}`
 }
@@ -66,7 +66,7 @@ export function formatSavings(original, sale, currency = 'USD') {
  * @returns {boolean}
  */
 export function isOnSale(original, sale) {
-  return !!original && !!sale && sale < original
+  return Number.isFinite(original) && Number.isFinite(sale) && sale < original
 }
 
 // ─────────────────────────────────────────────
@@ -232,7 +232,10 @@ export function isOfferActive(expiresAt) {
  */
 export function formatTimeLeft(expiresAt) {
   if (!expiresAt) return ''
-  const diff = new Date(expiresAt) - Date.now()
+  const timestamp = new Date(expiresAt).getTime()
+  if (!isFinite(timestamp)) return ''
+  
+  const diff = timestamp - Date.now()
   if (diff <= 0) return 'Expired'
 
   const days    = Math.floor(diff / 86400000)

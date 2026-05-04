@@ -118,7 +118,15 @@ function getTimeRemaining(expiresAt) {
 
 // ── Individual Offer Card ──────────────────────────────────────────────────
 function OfferCard({ offer, onAddToCart, onWishlist, wishlisted = false }) {
-  const timeLeft = getTimeRemaining(offer.expiresAt)
+  const [timeLeft, setTimeLeft] = useState(getTimeRemaining(offer.expiresAt))
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeLeft(getTimeRemaining(offer.expiresAt))
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [offer.expiresAt])
+  
   const isUrgent = timeLeft.includes('m') && !timeLeft.includes('d') && !timeLeft.includes('h')
   
   return (
@@ -131,6 +139,7 @@ function OfferCard({ offer, onAddToCart, onWishlist, wishlisted = false }) {
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
+      position: 'relative',
     }}
     onMouseEnter={e => {
       e.currentTarget.style.transform = 'translateY(-4px)'

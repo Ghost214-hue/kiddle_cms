@@ -20,7 +20,7 @@ const DRAWER_LINKS = [
   { label: "Children's Collection",  href: '/category/childrens', icon: '🧒' },
   { label: 'Rare Finds',             href: '/category/rare',      icon: '🔍' },
   { label: 'Gifts & Stationery',     href: '/category/gifts',     icon: '🎁' },
-  { label: 'About Us',               href: '/about',              icon: '🌿' },
+  { label: 'Contact',                href: '/contact',            icon: '✉️' },
 ]
 
 // ── Shared icon button ────────────────────────────────────────────────────────
