@@ -1,93 +1,64 @@
-const SIZES = {
-  sm: { px: '10px', py: '5px', font: '11px', radius: '20px' },
-  md: { px: '16px', py: '8px', font: '12.5px', radius: '24px' },
-  lg: { px: '20px', py: '10px', font: '13.5px', radius: '28px' },
-}
-
-export default function CategoryPill({
-  label,
-  active = false,
-  count,
-  icon,
-  onClick,
+// components/ui/CategoryPill.jsx
+export default function CategoryPill({ 
+  label, 
+  icon, 
+  count, 
+  active = false, 
+  onClick, 
   size = 'md',
-  variant = 'default',
+  style = {}
 }) {
-  const s = SIZES[size] || SIZES.md
-
-  const baseStyle = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    paddingLeft: s.px,
-    paddingRight: s.py,
-    paddingTop: s.py,
-    paddingBottom: s.py,
-    borderRadius: s.radius,
-    fontSize: s.font,
-    fontFamily: "'DM Sans', sans-serif",
-    fontWeight: active ? '600' : '400',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    whiteSpace: 'nowrap',
-    userSelect: 'none',
-    border: '1px solid',
-    lineHeight: 1,
-  }
-
-  const styles = {
-    default: {
-      ...baseStyle,
-      background: active
-        ? 'rgba(160,105,58,0.18)'
-        : 'rgba(255,255,255,0.5)',
-      borderColor: active
-        ? 'rgba(160,105,58,0.5)'
-        : 'rgba(180,140,90,0.28)',
-      color: active ? '#5c3520' : '#7a4e22',
-      boxShadow: active
-        ? '0 2px 10px rgba(160,105,58,0.15)'
-        : 'none',
-    },
-    outlined: {
-      ...baseStyle,
-      background: active ? '#a0693a' : 'transparent',
-      borderColor: '#a0693a',
-      color: active ? '#fff' : '#a0693a',
-    },
-    solid: {
-      ...baseStyle,
-      background: active ? '#a0693a' : 'rgba(160,105,58,0.08)',
-      borderColor: active ? '#a0693a' : 'rgba(160,105,58,0.15)',
-      color: active ? '#fff' : '#7a4e22',
-    },
+  const sizes = {
+    sm: { padding: '6px 14px', fontSize: '12px', gap: '4px' },
+    md: { padding: '8px 18px', fontSize: '13px', gap: '6px' },
+    lg: { padding: '10px 22px', fontSize: '14px', gap: '8px' },
   }
 
   return (
     <button
       onClick={onClick}
-      style={styles[variant] || styles.default}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: sizes[size].gap,
+        padding: sizes[size].padding,
+        borderRadius: '40px',
+        background: active ? 'linear-gradient(135deg, #D97706, #B45309)' : 'white',
+        border: active ? 'none' : '1px solid #FCD34D',
+        fontSize: sizes[size].fontSize,
+        fontWeight: '500',
+        fontFamily: "'DM Sans', sans-serif",
+        color: active ? 'white' : '#78350F',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        whiteSpace: 'nowrap',
+        boxShadow: active ? '0 4px 12px rgba(217,119,6,0.3)' : 'none',
+        ...style,
+      }}
+      onMouseEnter={(e) => {
+        if (!active) {
+          e.currentTarget.style.background = '#FEF3C7'
+          e.currentTarget.style.transform = 'translateY(-2px)'
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!active) {
+          e.currentTarget.style.background = 'white'
+          e.currentTarget.style.transform = 'translateY(0)'
+        }
+      }}
     >
-      {icon && (
-        <span style={{ fontSize: '13px', lineHeight: 1 }}>{icon}</span>
-      )}
+      <span style={{ fontSize: size === 'lg' ? '18px' : '14px' }}>{icon}</span>
       <span>{label}</span>
       {count !== undefined && (
         <span style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minWidth: '18px',
-          height: '16px',
-          padding: '0 5px',
-          borderRadius: '10px',
-          background: active
-            ? 'rgba(255,255,255,0.3)'
-            : 'rgba(160,105,58,0.15)',
-          color: active ? '#fff' : '#a0693a',
-          fontSize: '10px',
+          background: active ? 'rgba(255,255,255,0.2)' : '#FEF3C7',
+          borderRadius: '30px',
+          padding: '2px 8px',
+          fontSize: '11px',
           fontWeight: '600',
-          lineHeight: 1,
+          color: active ? 'white' : '#D97706',
+          marginLeft: '4px',
         }}>
           {count}
         </span>

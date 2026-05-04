@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react'
-import { useCart, useWishlist } from '../../context/CartContext'
+import { useCart }     from '../../../context/CartContext'
+import { useWishlist } from '../../../context/CartContext'
 
 let logoSrc = null
 try {
-  logoSrc = new URL('../../assets/kiddle1.png', import.meta.url).href
+  logoSrc = new URL('../assets/kiddle1.jpeg', import.meta.url).href
 } catch (_) {}
 
 const NAV_LINKS = [
   { label: 'Browse Books', href: '/books'       },
   { label: 'New Arrivals', href: '/new-arrivals' },
   { label: 'Bestsellers',  href: '/bestsellers'  },
-  {label:"contact us",href:"/contact"}
 ]
 
 const DRAWER_LINKS = [
@@ -20,7 +20,7 @@ const DRAWER_LINKS = [
   { label: "Children's Collection",  href: '/category/childrens', icon: '🧒' },
   { label: 'Rare Finds',             href: '/category/rare',      icon: '🔍' },
   { label: 'Gifts & Stationery',     href: '/category/gifts',     icon: '🎁' },
-  { label: 'contact us',               href: '/contact',              icon: '🌿' },
+  { label: 'About Us',               href: '/about',              icon: '🌿' },
 ]
 
 // ── Shared icon button ────────────────────────────────────────────────────────
@@ -71,61 +71,54 @@ function NavIconBtn({ children, badge = 0, onClick, title, size = 38 }) {
 // ── Logo mark ─────────────────────────────────────────────────────────────────
 function KiddleLogo({ size = 'md' }) {
   const [imgError, setImgError] = useState(false)
-  // sm = drawer header (52px), md = desktop navbar (68px)
-  const h = size === 'sm' ? 60 : 68
+  const h = size === 'sm' ? 30 : 36
 
   return (
-    <a
-      href="/"
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        textDecoration: 'none',
-        flexShrink: 0,
-      }}
-    >
+    <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', flexShrink: 0 }}>
+      {/* Image logo */}
       {logoSrc && !imgError ? (
         <img
           src={logoSrc}
-          alt="Kiddle Bookshop"
+          alt="Kiddle Bookshop logo"
           onError={() => setImgError(true)}
           style={{
-            height: h,
-            width: h,
-            borderRadius: '50%',
-            objectFit: 'cover',
-            objectPosition: 'center',
-            border: '3px solid rgba(20,10,2,0.22)',
-            boxShadow: '0 4px 18px rgba(20,10,2,0.22), inset 0 1px 0 rgba(255,255,255,0.3)',
-            flexShrink: 0,
-            display: 'block',
-            transition: 'box-shadow 0.25s, transform 0.25s',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.boxShadow = '0 6px 24px rgba(20,10,2,0.30), inset 0 1px 0 rgba(255,255,255,0.3)'
-            e.currentTarget.style.transform = 'scale(1.04)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.boxShadow = '0 4px 18px rgba(20,10,2,0.22), inset 0 1px 0 rgba(255,255,255,0.3)'
-            e.currentTarget.style.transform = 'scale(1)'
+            height: h, width: h, borderRadius: '10px', objectFit: 'cover',
+            border: '1.5px solid rgba(20,10,2,0.14)',
+            boxShadow: '0 2px 8px rgba(20,10,2,0.10)',
           }}
         />
       ) : (
-        /* SVG fallback */
+        /* SVG fallback — two book spines */
         <span style={{
-          width: h, height: h, borderRadius: '50%',
-          background: '#1a1008',
-          border: '3px solid rgba(20,10,2,0.22)',
-          boxShadow: '0 4px 18px rgba(20,10,2,0.18)',
+          width: h, height: h, borderRadius: '10px',
+          background: 'rgba(255,252,246,0.7)',
+          border: '1.5px solid rgba(20,10,2,0.16)',
+          boxShadow: '0 2px 8px rgba(20,10,2,0.08), inset 0 1px 0 rgba(255,255,255,0.6)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
         }}>
-          <svg width={h * 0.5} height={h * 0.5} viewBox="0 0 20 20" fill="none">
-            <rect x="1" y="2" width="7" height="16" rx="1.5" fill="#f5f0e8"/>
-            <rect x="11" y="2" width="7" height="16" rx="1.5" fill="#f5f0e8" opacity="0.40"/>
+          <svg width={h * 0.55} height={h * 0.55} viewBox="0 0 20 20" fill="none">
+            <rect x="1" y="2" width="7" height="16" rx="1.5" fill="#1a1008"/>
+            <rect x="11" y="2" width="7" height="16" rx="1.5" fill="#1a1008" opacity="0.30"/>
           </svg>
         </span>
       )}
+
+      {/* Wordmark */}
+      <span style={{
+        fontFamily: "'Playfair Display', serif",
+        fontSize: size === 'sm' ? '15px' : '17px',
+        fontWeight: '700',
+        color: '#1a1008',
+        letterSpacing: '0.01em',
+        lineHeight: 1,
+        userSelect: 'none',
+      }}>
+        Kiddle{' '}
+        <span style={{ fontWeight: '400', fontStyle: 'italic', color: '#1a1008', opacity: 0.55 }}>
+          Bookshop
+        </span>
+      </span>
     </a>
   )
 }
@@ -142,30 +135,35 @@ export default function Navbar() {
   const { wishlist }        = useWishlist()
   const wishCount           = wishlist?.length ?? 0
 
+  // Scroll depth tracking
   useEffect(() => {
     const fn = () => setScrollY(window.scrollY)
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
   }, [])
 
+  // Active path
   useEffect(() => {
     setActivePath(window.location.pathname)
   }, [])
 
+  // Resize — close drawer on desktop
   useEffect(() => {
     const fn = () => { if (window.innerWidth >= 768) setMenuOpen(false) }
     window.addEventListener('resize', fn)
     return () => window.removeEventListener('resize', fn)
   }, [])
 
+  // Body scroll lock when drawer open
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [menuOpen])
 
+  // Interpolate navbar appearance based on scroll
   const t       = Math.min(scrollY / 80, 1)
-  const bgAlpha = (0.78 + t * 0.19).toFixed(3)
-  const blur    = Math.round(16 + t * 8)
+  const bgAlpha = (0.78 + t * 0.19).toFixed(3)   // 0.78 → 0.97
+  const blur    = Math.round(16 + t * 8)           // 16 → 24
   const shadow  = (t * 0.18).toFixed(3)
 
   const ICON_COLOR = '#1a1008'
@@ -176,10 +174,13 @@ export default function Navbar() {
       {/* ══════════════ HEADER BAR ══════════════ */}
       <header style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9000,
+        /* CREAM glass */
         background: `rgba(245, 240, 230, ${bgAlpha})`,
         backdropFilter: `blur(${blur}px) saturate(165%)`,
         WebkitBackdropFilter: `blur(${blur}px) saturate(165%)`,
+        /* Dark ink border bottom */
         borderBottom: '1px solid rgba(20, 10, 2, 0.20)',
+        /* Frosted inner edge + scroll shadow */
         boxShadow: [
           'inset 0 1px 0 rgba(255, 252, 246, 0.72)',
           `0 6px 36px rgba(20, 10, 2, ${shadow})`,
@@ -188,14 +189,8 @@ export default function Navbar() {
       }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 clamp(16px,3vw,32px)' }}>
 
-          {/* ── Main row — 80px tall to comfortably hold 68px logo ── */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            height: '80px',
-            gap: '12px',
-          }}>
+          {/* ── Main row ── */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '66px', gap: '12px' }}>
 
             {/* Logo */}
             <KiddleLogo />
@@ -375,7 +370,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* ── Mobile search bar ── */}
+          {/* ── Mobile search bar (slides down below header) ── */}
           <div className="k-mob-search" style={{
             maxHeight: searchOpen ? '64px' : '0',
             overflow: 'hidden',
@@ -446,7 +441,7 @@ export default function Navbar() {
         {/* Drawer header */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '16px 20px',
+          padding: '18px 20px 16px',
           borderBottom: '1px solid rgba(20,10,2,0.10)',
         }}>
           <KiddleLogo size="sm" />
@@ -467,7 +462,7 @@ export default function Navbar() {
 
         {/* Links */}
         <nav style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
-          {DRAWER_LINKS.map((link) => {
+          {DRAWER_LINKS.map((link, i) => {
             const active = activePath === link.href
             return (
               <a
@@ -543,10 +538,11 @@ export default function Navbar() {
 
       {/* ══════════════ RESPONSIVE RULES ══════════════ */}
       <style>{`
-        .k-desk-nav   { display: flex !important }
-        .k-desk-icons { display: flex !important }
-        .k-mob-icons  { display: none !important }
-        .k-mob-search { display: none !important }
+        /* Desktop */
+        .k-desk-nav   { display: flex   !important }
+        .k-desk-icons { display: flex   !important }
+        .k-mob-icons  { display: none   !important }
+        .k-mob-search { display: none   !important }
 
         @media (max-width: 767px) {
           .k-desk-nav   { display: none  !important }

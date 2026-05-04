@@ -6,7 +6,7 @@ import HomePage from './pages/HomePage'
 import CollectionPage from './pages/CollectionPage'
 import BookDetailPage from './pages/BookDetailPage'
 import CartPage from './pages/CartPage'
-import AboutPage from './pages/AboutPage'
+import ContactUs from './pages/ContactUs'
 
 export default function App() {
   return (
@@ -19,7 +19,7 @@ export default function App() {
           <Route path="/category/:slug"    element={<CollectionPage />} />
           <Route path="/book/:slug"        element={<BookDetailPage />} />
           <Route path="/cart"              element={<CartPage />} />
-          <Route path="/about"             element={<AboutPage />} />
+          <Route path="/contact"             element={<ContactUs />} />
         </Routes>
         <Footer />
       </BrowserRouter>
