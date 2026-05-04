@@ -1,527 +1,454 @@
-
-import { useState } from 'react'
-import { useCart }  from '../context/CartContext'
-import { formatCartTotal, formatPrice, clamp } from '../utils/formatPrice'
-
-const MOCK_CART_ITEMS = [
-  { _id:'b1', title:'The Architecture of Light', author:'Julian Thorne',  price:42.50, salePrice:42.50, format:'Hardcover', qty:1, coverColor:'#c8d8e8' },
-  { _id:'b2', title:'Wildwood Whispers',          author:'Elena Rosewood', price:28.00, salePrice:28.00, format:'Hardcover', qty:2, coverColor:'#d8e8c0' },
-  { _id:'b3', title:'Sunlit Memories',            author:'Marcus Aurelius', price:19.99, salePrice:19.99, format:'Hardcover', qty:1, coverColor:'#f5d5a8' },
-]
+import { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useCart } from '../context/CartContext'
+import { formatPrice } from '../utils/formatPrice'
 
 const PAYMENT_METHODS = ['CARD', 'PAYPAL']
 
+// Helper to get cover color based on book title/genre
+function getCoverColor(book) {
+  const colors = {
+    'The Midnight Library': '#8aaccb',
+    'Before the Coffee Gets Cold': '#e8d5b8',
+    'Where the Crawdads Sing': '#a89060',
+    "The Lion's Secret Garden": '#7ab080',
+    'Klara and the Sun': '#c8b8a0',
+    'Stars & Beyond': '#2a4a6a',
+    'The Forest Alphabet': '#6a9a6a',
+    'Wings of Tomorrow': '#c4a060',
+    'The Starless Sea': '#4a6a8a',
+    'Wildwood Whispers': '#5a8a6a',
+    'Mathematics Grade 7': '#d4a050',
+    'Colours of the Sky': '#8aaccb',
+    'Things Fall Apart': '#a06030',
+    'English Workbook Grade 4': '#6a9a8a',
+    'Science & Tech Grade 6': '#4a7a6a',
+    'Social Studies Grade 3': '#d4a060',
+  }
+  return colors[book.title] || '#e0a870'
+}
+
 function CartItem({ item, onUpdateQty, onRemove }) {
   const [removing, setRemoving] = useState(false)
+  const [imgErr, setImgErr] = useState(false)
+  const price = (item.salePrice ?? item.price) * item.qty
 
   function handleRemove() {
     setRemoving(true)
     setTimeout(() => onRemove(item._id, item.format), 350)
   }
 
+  const coverColor = getCoverColor(item)
+
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: '16px',
-      padding: '18px 20px',
-      background: 'rgba(255,255,255,0.58)',
-      border: '1px solid rgba(200,170,130,0.28)',
-      borderRadius: '18px',
-      backdropFilter: 'blur(12px)',
-      transition: 'opacity 0.35s ease, transform 0.35s ease',
-      opacity: removing ? 0 : 1,
-      transform: removing ? 'translateX(20px)' : 'none',
-    }}>
-      {/* Cover */}
-      <div style={{
-        width: '64px', height: '90px', borderRadius: '10px', flexShrink: 0,
-        background: item.coverColor || 'linear-gradient(145deg,#f5d5a8,#e0a870)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '3px 4px 12px rgba(100,60,20,0.18)',
-        position: 'relative', overflow: 'hidden',
-      }}>
-        <div style={{
-          position: 'absolute', left: 0, top: 0, bottom: 0, width: '8px',
-          background: 'rgba(0,0,0,0.14)', borderRadius: '4px 0 0 4px',
-        }}/>
-        {item.coverImage ? (
-          <img src={item.coverImage} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
-        ) : (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.6, marginLeft: '4px' }}>
-            <path d="M4 19V5a2 2 0 012-2h13a1 1 0 011 1v13" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" strokeLinecap="round"/>
-            <path d="M4 19a2 2 0 002 2h14" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" strokeLinecap="round"/>
+    <div className={`
+      flex flex-col gap-3 p-4
+      bg-white/60 backdrop-blur-sm
+      border border-[rgba(200,170,130,0.28)] rounded-xl
+      transition-all duration-350
+      ${removing ? 'opacity-0 translate-x-5' : 'opacity-100 translate-x-0'}
+    `}>
+      {/* Top row: Cover + Info */}
+      <div className="flex gap-3 items-start">
+        {/* Cover */}
+        <Link to={`/book/${item.slug}`} className="flex-shrink-0">
+          <div 
+            className="w-[70px] h-[100px] rounded-lg relative overflow-hidden shadow-md"
+            style={{
+              background: `linear-gradient(145deg, ${coverColor}, ${coverColor}80)`,
+            }}
+          >
+            <div className="absolute left-0 top-0 bottom-0 w-2 bg-black/15 rounded-l-lg" />
+            {!imgErr && item.img ? (
+              <img 
+                src={item.img} 
+                alt={item.title} 
+                onError={() => setImgErr(true)}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="opacity-60 mx-auto mt-8">
+                <path d="M4 19V5a2 2 0 012-2h13a1 1 0 011 1v13" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M4 19a2 2 0 002 2h14" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            )}
+          </div>
+        </Link>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <Link to={`/book/${item.slug}`} className="no-underline">
+            <h3 className="font-playfair text-[15px] font-semibold text-[#3d2010] mb-1 leading-tight line-clamp-2">
+              {item.title}
+            </h3>
+          </Link>
+          <p className="text-xs text-[#9a7a5a] font-dm-sans mb-2">
+            by {item.author}
+          </p>
+          <div className="inline-flex items-center gap-1.5 bg-[rgba(160,105,58,0.09)] rounded-lg px-2.5 py-0.5">
+            <span className="text-[11px] text-[#9a6030] font-dm-sans font-medium">
+              {item.format || 'Print'}
+            </span>
+            {item.ageRange && (
+              <>
+                <span className="text-[#c4a882]">•</span>
+                <span className="text-[11px] text-[#9a6030] font-dm-sans font-medium">
+                  {item.ageRange}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom row: Price + Quantity + Remove */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        {/* Price */}
+        <div className="text-[17px] font-bold text-[#7a4e22] font-dm-sans">
+          {formatPrice(price)}
+        </div>
+
+        {/* Quantity controls */}
+        <div className="flex items-center">
+          <button
+            onClick={() => onUpdateQty(item._id, item.format, item.qty - 1)}
+            className="w-[34px] h-[34px] bg-white/60 border border-[rgba(180,140,90,0.28)] border-r-0 rounded-l-lg cursor-pointer text-lg text-[#7a4e22] flex items-center justify-center hover:bg-white/80 transition"
+          >
+            −
+          </button>
+          <div className="w-11 h-[34px] bg-white/70 border border-[rgba(180,140,90,0.28)] flex items-center justify-center text-sm font-semibold text-[#3d2010] font-dm-sans">
+            {item.qty}
+          </div>
+          <button
+            onClick={() => onUpdateQty(item._id, item.format, item.qty + 1)}
+            className="w-[34px] h-[34px] bg-white/60 border border-[rgba(180,140,90,0.28)] border-l-0 rounded-r-lg cursor-pointer text-lg text-[#7a4e22] flex items-center justify-center hover:bg-white/80 transition"
+          >
+            +
+          </button>
+        </div>
+
+        {/* Remove button */}
+        <button
+          onClick={handleRemove}
+          className="bg-none border-none cursor-pointer text-[#c4a882] px-3 py-1.5 flex items-center gap-1.5 text-xs font-dm-sans transition-colors hover:text-[#b43c1e] rounded-lg"
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 3.5h10M5.5 3.5V2.5a1 1 0 011-1h1a1 1 0 011 1v1M6 6v4M8 6v4M3 3.5l.7 7.5a1 1 0 001 .9h4.6a1 1 0 001-.9l.7-7.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-        )}
-      </div>
-
-      {/* Info */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          fontFamily: "'Playfair Display',serif",
-          fontSize: '14.5px', fontWeight: '600', color: '#3d2010',
-          marginBottom: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-        }}>
-          {item.title}
-        </div>
-        <div style={{ fontSize: '12px', color: '#9a7a5a', fontFamily: "'DM Sans',sans-serif", marginBottom: '8px' }}>
-          by {item.author}
-        </div>
-        <div style={{
-          display: 'inline-flex', alignItems: 'center',
-          background: 'rgba(160,105,58,0.09)', borderRadius: '10px',
-          padding: '2px 9px', fontSize: '10.5px', color: '#9a6030',
-          fontFamily: "'DM Sans',sans-serif", fontWeight: '500',
-        }}>
-          {item.format}
-        </div>
-      </div>
-
-      {/* Price */}
-      <div style={{
-        fontSize: '15px', fontWeight: '700', color: '#7a4e22',
-        fontFamily: "'DM Sans',sans-serif", flexShrink: 0,
-        textAlign: 'right', minWidth: '60px',
-      }}>
-        {formatPrice((item.salePrice ?? item.price) * item.qty)}
-      </div>
-
-      {/* Qty stepper */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0', flexShrink: 0 }}>
-        <button
-          onClick={() => onUpdateQty(item._id, item.format, item.qty - 1)}
-          style={{
-            width: '30px', height: '30px',
-            background: 'rgba(255,255,255,0.6)',
-            border: '1px solid rgba(180,140,90,0.28)', borderRight: 'none',
-            borderRadius: '8px 0 0 8px', cursor: 'pointer',
-            fontSize: '15px', color: '#7a4e22',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >
-          −
-        </button>
-        <div style={{
-          width: '36px', height: '30px',
-          background: 'rgba(255,255,255,0.7)',
-          border: '1px solid rgba(180,140,90,0.28)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '13px', fontWeight: '600', color: '#3d2010',
-          fontFamily: "'DM Sans',sans-serif",
-        }}>
-          {item.qty}
-        </div>
-        <button
-          onClick={() => onUpdateQty(item._id, item.format, item.qty + 1)}
-          style={{
-            width: '30px', height: '30px',
-            background: 'rgba(255,255,255,0.6)',
-            border: '1px solid rgba(180,140,90,0.28)', borderLeft: 'none',
-            borderRadius: '0 8px 8px 0', cursor: 'pointer',
-            fontSize: '15px', color: '#7a4e22',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >
-          +
+          <span>Remove</span>
         </button>
       </div>
-
-      {/* Remove */}
-      <button
-        onClick={handleRemove}
-        style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          color: '#c4a882', flexShrink: 0, padding: '4px',
-          display: 'flex', alignItems: 'center', gap: '4px',
-          fontSize: '12px', fontFamily: "'DM Sans',sans-serif",
-          transition: 'color 0.2s',
-        }}
-        onMouseEnter={e => e.currentTarget.style.color = '#b43c1e'}
-        onMouseLeave={e => e.currentTarget.style.color = '#c4a882'}
-      >
-        <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-          <path d="M2 3.5h10M5.5 3.5V2.5a1 1 0 011-1h1a1 1 0 011 1v1M6 6v4M8 6v4M3 3.5l.7 7.5a1 1 0 001 .9h4.6a1 1 0 001-.9l.7-7.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-        Remove
-      </button>
     </div>
   )
 }
 
-export default function CartPage() {
-  const { cart: ctxCart, updateQty, removeFromCart, clearCart } = useCart()
-  const [items, setItems] = useState(MOCK_CART_ITEMS) // use ctxCart in production
-  const [promoCode, setPromoCode]     = useState('')
-  const [promoInput, setPromoInput]   = useState('')
-  const [promoError, setPromoError]   = useState('')
-  const [payMethod, setPayMethod]     = useState('CARD')
-  const [ordered, setOrdered]         = useState(false)
-  const [ordering, setOrdering]       = useState(false)
+// Function to calculate cart totals
+function calculateCartTotals(items, promoCode = null) {
+  const subtotal = items.reduce((sum, item) => {
+    const price = item.salePrice ?? item.price
+    return sum + (price * item.qty)
+  }, 0)
+  
+  const itemCount = items.reduce((sum, item) => sum + item.qty, 0)
+  const shipping = subtotal > 50 ? 0 : 5.99
+  const tax = subtotal * 0.08
+  let discount = 0
+  
+  if (promoCode === 'KIDDLE10') discount = subtotal * 0.10
+  if (promoCode === 'SUNLIT') discount = subtotal * 0.15
+  
+  const total = subtotal + shipping + tax - discount
+  
+  return {
+    subtotal: formatPrice(subtotal),
+    subtotalRaw: subtotal,
+    shipping: shipping === 0 ? 'Free' : formatPrice(shipping),
+    shippingRaw: shipping,
+    tax: formatPrice(tax),
+    taxRaw: tax,
+    discount: formatPrice(discount),
+    discountRaw: discount,
+    total: formatPrice(total),
+    totalRaw: total,
+    itemCount,
+    freeShipping: subtotal > 50,
+    promoApplied: discount > 0,
+  }
+}
 
-  const totals = formatCartTotal(items, promoCode)
+export default function CartPage() {
+  const navigate = useNavigate()
+  const { cart, updateQty, removeFromCart, clearCart } = useCart()
+  const [items, setItems] = useState([])
+  const [promoCode, setPromoCode] = useState('')
+  const [promoInput, setPromoInput] = useState('')
+  const [promoError, setPromoError] = useState('')
+  const [payMethod, setPayMethod] = useState('CARD')
+  const [ordered, setOrdered] = useState(false)
+  const [ordering, setOrdering] = useState(false)
+  const [totals, setTotals] = useState({
+    subtotal: '$0',
+    subtotalRaw: 0,
+    shipping: '$0',
+    shippingRaw: 0,
+    tax: '$0',
+    taxRaw: 0,
+    discount: '$0',
+    discountRaw: 0,
+    total: '$0',
+    totalRaw: 0,
+    itemCount: 0,
+    freeShipping: false,
+    promoApplied: false,
+  })
+
+  useEffect(() => {
+    setItems(cart || [])
+    setTotals(calculateCartTotals(cart || [], promoCode))
+  }, [cart, promoCode])
 
   function handleUpdateQty(id, format, qty) {
-    if (qty < 1) { handleRemove(id, format); return }
-    setItems(prev => prev.map(i => i._id === id && i.format === format ? { ...i, qty } : i))
+    if (qty < 1) {
+      handleRemove(id, format)
+      return
+    }
+    updateQty(id, format, qty)
   }
 
   function handleRemove(id, format) {
-    setItems(prev => prev.filter(i => !(i._id === id && i.format === format)))
+    removeFromCart(id, format)
   }
 
   function applyPromo() {
-    const VALID = ['KIDDLE10','SUNLIT','BOOKCLUB']
+    const VALID = ['KIDDLE10', 'SUNLIT', 'BOOKCLUB']
     if (VALID.includes(promoInput.toUpperCase())) {
       setPromoCode(promoInput.toUpperCase())
       setPromoError('')
     } else {
-      setPromoError('Invalid promo code. Try KIDDLE10 or SUNLIT.')
+      setPromoError('Invalid promo code. Try KIDDLE10, SUNLIT, or BOOKCLUB.')
     }
   }
 
   function handleOrder() {
     setOrdering(true)
-    setTimeout(() => { setOrdering(false); setOrdered(true) }, 2000)
+    setTimeout(() => {
+      setOrdering(false)
+      setOrdered(true)
+      clearCart()
+    }, 2000)
   }
 
   if (ordered) {
     return (
-      <div style={{
-        background: '#f5f0e8', minHeight: '100vh', paddingTop: '68px',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <div style={{
-          textAlign: 'center', maxWidth: '440px', padding: '40px',
-          background: 'rgba(255,255,255,0.6)',
-          border: '1px solid rgba(200,170,130,0.28)',
-          borderRadius: '28px', backdropFilter: 'blur(16px)',
-          boxShadow: '0 20px 60px rgba(100,60,20,0.12)',
-        }}>
-          <div style={{ fontSize: '56px', marginBottom: '16px' }}>📦</div>
-          <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: '26px', color: '#3d2010', marginBottom: '10px' }}>
-            Order Placed!
-          </h2>
-          <p style={{ fontSize: '13.5px', color: '#7a5c3a', fontFamily: "'DM Sans',sans-serif", lineHeight: 1.7, marginBottom: '24px' }}>
-            Your books are on their way. We'll send a confirmation to your email shortly. Happy reading!
+      <div className="bg-[#f5f0e8] min-h-screen pt-[68px] flex items-center justify-center p-5">
+        <div className="text-center max-w-[90%] w-[400px] p-8 bg-white/60 border border-[rgba(200,170,130,0.28)] rounded-3xl backdrop-blur-md">
+          <div className="text-5xl mb-4">📦</div>
+          <h2 className="font-playfair text-2xl text-[#3d2010] mb-2.5">Order Placed!</h2>
+          <p className="text-[13.5px] text-[#7a5c3a] font-dm-sans leading-relaxed mb-6">
+            Your books are on their way. We'll send a confirmation to your email shortly.
           </p>
-          <a href="/" style={{
-            display: 'inline-flex', alignItems: 'center', gap: '8px',
-            background: '#a0693a', color: '#fff',
-            padding: '12px 28px', borderRadius: '24px',
-            fontSize: '13px', fontWeight: '600',
-            fontFamily: "'DM Sans',sans-serif", textDecoration: 'none',
-          }}>
+          <button
+            onClick={() => navigate('/books')}
+            className="inline-flex items-center gap-2 bg-[#a0693a] text-white px-7 py-3 rounded-2xl text-[13px] font-semibold font-dm-sans border-none cursor-pointer hover:bg-[#8a5830] transition"
+          >
             Continue Shopping →
-          </a>
+          </button>
         </div>
       </div>
     )
   }
 
   return (
-    <div style={{ background: '#f5f0e8', minHeight: '100vh', paddingTop: '68px' }}>
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '36px 40px' }}>
+    <div className="bg-[#f5f0e8] min-h-screen pt-[68px]">
+      <div className="cart-container px-4 py-5 pb-10 md:px-6 lg:px-8 lg:max-w-[1280px] lg:mx-auto">
+        
+        {/* Back button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="back-button inline-flex items-center gap-1.5 bg-none border-none cursor-pointer text-sm text-[#a0693a] font-medium font-dm-sans py-2 mb-5 lg:mb-8 hover:text-[#8a5830] transition"
+        >
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+            <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Back
+        </button>
 
         {/* Header */}
-        <div style={{
-          display: 'flex', alignItems: 'flex-start',
-          justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '12px',
-        }}>
-          <div>
-            <h1 style={{
-              fontFamily: "'Playfair Display',serif",
-              fontSize: 'clamp(24px,3.5vw,34px)', fontWeight: '700',
-              color: '#3d2010', marginBottom: '6px',
-            }}>
-              Your Reading List
-            </h1>
-            <p style={{ fontSize: '13px', color: '#9a7a5a', fontFamily: "'DM Sans',sans-serif" }}>
-              {items.length === 0
-                ? 'Your cart is empty.'
-                : `You have ${totals.itemCount} item${totals.itemCount !== 1 ? 's' : ''} ready for checkout.`}
-            </p>
-          </div>
-          <a href="/books" style={{
-            display: 'inline-flex', alignItems: 'center', gap: '5px',
-            fontSize: '12.5px', color: '#a0693a', fontWeight: '600',
-            fontFamily: "'DM Sans',sans-serif", textDecoration: 'none',
-          }}>
-            ← Back to Shop
-          </a>
+        <div className="cart-header mb-6 lg:mb-8">
+          <h1 className="font-playfair text-[28px] font-bold text-[#3d2010] mb-2">
+            Your Reading List
+          </h1>
+          <p className="text-[13px] text-[#9a7a5a] font-dm-sans">
+            {items.length === 0
+              ? 'Your cart is empty.'
+              : `${totals.itemCount} item${totals.itemCount !== 1 ? 's' : ''} ready for checkout`}
+          </p>
         </div>
 
         {items.length === 0 ? (
-          <div style={{
-            textAlign: 'center', padding: '80px 20px',
-            background: 'rgba(255,255,255,0.55)',
-            border: '1px solid rgba(200,170,130,0.25)',
-            borderRadius: '24px', backdropFilter: 'blur(12px)',
-          }}>
-            <div style={{ fontSize: '52px', marginBottom: '16px' }}>📚</div>
-            <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: '22px', color: '#3d2010', marginBottom: '8px' }}>Your list is empty</h3>
-            <p style={{ fontSize: '13.5px', color: '#9a7a5a', fontFamily: "'DM Sans',sans-serif", marginBottom: '24px' }}>
-              Discover books that will spark your imagination.
-            </p>
-            <a href="/books" style={{
-              display: 'inline-flex', gap: '8px', alignItems: 'center',
-              background: '#a0693a', color: '#fff',
-              padding: '12px 28px', borderRadius: '24px',
-              fontSize: '13px', fontWeight: '600',
-              fontFamily: "'DM Sans',sans-serif", textDecoration: 'none',
-            }}>
+          <div className="empty-cart text-center py-[60px] px-5 bg-white/60 border border-[rgba(200,170,130,0.25)] rounded-2xl">
+            <div className="text-5xl mb-4">📚</div>
+            <h3 className="font-playfair text-xl text-[#3d2010] mb-2">Your list is empty</h3>
+            <p className="text-[13px] text-[#9a7a5a] mb-6">Discover books that will spark your imagination.</p>
+            <button
+              onClick={() => navigate('/books')}
+              className="inline-flex gap-2 items-center bg-[#a0693a] text-white px-7 py-3 rounded-2xl text-[13px] font-semibold font-dm-sans border-none cursor-pointer hover:bg-[#8a5830] transition"
+            >
               Discover Books →
-            </a>
+            </button>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '32px', alignItems: 'start' }}
-            className="cart-grid"
-          >
-            {/* Left — items */}
-            <div>
-              {/* Free shipping notice */}
-              {totals.freeShipping ? (
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '10px',
-                  background: 'rgba(60,140,80,0.10)',
-                  border: '1px solid rgba(60,140,80,0.25)',
-                  borderRadius: '14px', padding: '12px 16px', marginBottom: '18px',
-                }}>
-                  <span style={{ fontSize: '16px' }}>🚚</span>
-                  <div>
-                    <div style={{ fontSize: '12.5px', fontWeight: '600', color: '#2d7a45', fontFamily: "'DM Sans',sans-serif" }}>
-                      Free Express Shipping
-                    </div>
-                    <div style={{ fontSize: '11.5px', color: '#5a9060', fontFamily: "'DM Sans',sans-serif" }}>
-                      Apply the code <strong>SUNLIT</strong> at checkout for an extra 15% off.
-                    </div>
-                  </div>
-                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <>
+            {/* Desktop 2-column layout, mobile stacked */}
+            <div className="cart-layout flex flex-col gap-6 lg:flex-row lg:gap-8 lg:items-start">
+              {/* Left Column - Cart Items */}
+              <div className="cart-items-section w-full lg:flex-[2]">
+                {/* Cart Items List */}
+                <div className="flex flex-col gap-3">
+                  {items.map((item, index) => (
+                    <CartItem
+                      key={`${item._id}-${item.format || 'print'}-${index}`}
+                      item={item}
+                      onUpdateQty={handleUpdateQty}
+                      onRemove={handleRemove}
+                    />
+                  ))}
+                </div>
+
+                {/* Promo Code Section - Mobile only */}
+                <div className="promo-mobile block lg:hidden bg-white/60 border border-[rgba(200,170,130,0.25)] rounded-xl p-4 mt-5">
+                  <div className="flex gap-2 flex-wrap">
                     <input
                       value={promoInput}
                       onChange={e => setPromoInput(e.target.value)}
                       placeholder="Discount Code"
-                      style={{
-                        padding: '7px 12px', fontSize: '12px',
-                        background: 'rgba(255,255,255,0.7)',
-                        border: '1px solid rgba(180,140,90,0.28)',
-                        borderRadius: '10px', outline: 'none',
-                        fontFamily: "'DM Sans',sans-serif", color: '#3d2f1f',
-                        width: '130px',
-                      }}
+                      className="flex-1 p-3 text-sm bg-white/70 border border-[rgba(180,140,90,0.28)] rounded-xl outline-none font-dm-sans"
                     />
-                    <button onClick={applyPromo} style={{
-                      padding: '7px 14px', background: 'rgba(255,255,255,0.7)',
-                      border: '1px solid rgba(180,140,90,0.35)',
-                      borderRadius: '10px', cursor: 'pointer',
-                      fontSize: '12px', fontWeight: '600', color: '#7a4e22',
-                      fontFamily: "'DM Sans',sans-serif",
-                    }}>
+                    <button
+                      onClick={applyPromo}
+                      className="px-5 py-3 bg-[#a0693a] text-white border-none rounded-xl cursor-pointer text-[13px] font-semibold font-dm-sans hover:bg-[#8a5830] transition"
+                    >
                       Apply
                     </button>
                   </div>
+                  {promoError && (
+                    <p className="text-xs text-[#b43c1e] mt-2">{promoError}</p>
+                  )}
+                  {totals.promoApplied && (
+                    <div className="flex items-center gap-2 bg-[rgba(60,140,80,0.10)] rounded-lg p-2.5 mt-3 text-xs text-[#2d7a45]">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <circle cx="7" cy="7" r="6" stroke="#2d7a45" strokeWidth="1.2"/>
+                        <path d="M4.5 7l2 2 3-3" stroke="#2d7a45" strokeWidth="1.3" strokeLinecap="round"/>
+                      </svg>
+                      Promo code applied — {totals.discount} off
+                    </div>
+                  )}
                 </div>
-              ) : null}
-              {promoError && (
-                <p style={{ fontSize: '11.5px', color: '#b43c1e', fontFamily: "'DM Sans',sans-serif", marginBottom: '12px' }}>
-                  {promoError}
-                </p>
-              )}
-              {totals.promoApplied && (
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  background: 'rgba(60,140,80,0.10)', borderRadius: '12px',
-                  padding: '8px 14px', marginBottom: '14px', fontSize: '12px', color: '#2d7a45',
-                  fontFamily: "'DM Sans',sans-serif",
-                }}>
-                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#2d7a45" strokeWidth="1.2"/><path d="M4.5 7l2 2 3-3" stroke="#2d7a45" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  Promo code <strong>{promoCode}</strong> applied — {totals.promoDiscount}
-                </div>
-              )}
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {items.map(item => (
-                  <CartItem
-                    key={`${item._id}-${item.format}`}
-                    item={item}
-                    onUpdateQty={handleUpdateQty}
-                    onRemove={handleRemove}
-                  />
-                ))}
               </div>
-            </div>
 
-            {/* Right — order summary */}
-            <div style={{
-              background: 'rgba(255,255,255,0.58)',
-              border: '1px solid rgba(200,170,130,0.28)',
-              borderRadius: '22px', padding: '24px',
-              backdropFilter: 'blur(14px)',
-              position: 'sticky', top: '84px',
-              boxShadow: '0 8px 32px rgba(100,60,20,0.10)',
-            }}>
-              {/* Delivery address */}
-              <div style={{ marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid rgba(180,140,90,0.15)' }}>
-                <div style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  marginBottom: '14px',
-                }}>
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: '7px',
-                    fontSize: '13px', fontWeight: '600', color: '#3d2010',
-                    fontFamily: "'DM Sans',sans-serif",
-                  }}>
-                    <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-                      <path d="M7 1C4.8 1 3 2.8 3 5c0 3.3 4 8 4 8s4-4.7 4-8c0-2.2-1.8-4-4-4Z" stroke="#a0693a" strokeWidth="1.3"/>
-                      <circle cx="7" cy="5" r="1.3" fill="#a0693a"/>
-                    </svg>
-                    Delivery Address
+              {/* Right Column - Order Summary */}
+              <div className="order-summary-section w-full lg:flex-1 lg:sticky lg:top-[100px]">
+                <div className="bg-white/60 border border-[rgba(200,170,130,0.28)] rounded-xl p-5">
+                  <h3 className="font-playfair text-lg font-semibold text-[#3d2010] mb-4">
+                    Order Summary
+                  </h3>
+
+                  {/* Promo Code Section - Desktop only */}
+                  <div className="promo-desktop hidden lg:block mb-5">
+                    <div className="flex gap-2 flex-wrap">
+                      <input
+                        value={promoInput}
+                        onChange={e => setPromoInput(e.target.value)}
+                        placeholder="Discount Code"
+                        className="flex-1 p-2.5 text-[13px] bg-white/70 border border-[rgba(180,140,90,0.28)] rounded-lg outline-none font-dm-sans"
+                      />
+                      <button
+                        onClick={applyPromo}
+                        className="px-4 py-2.5 bg-[#a0693a] text-white border-none rounded-lg cursor-pointer text-xs font-semibold font-dm-sans hover:bg-[#8a5830] transition"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                    {promoError && (
+                      <p className="text-[11px] text-[#b43c1e] mt-2">{promoError}</p>
+                    )}
+                    {totals.promoApplied && (
+                      <div className="flex items-center gap-1.5 bg-[rgba(60,140,80,0.10)] rounded-lg p-2 mt-2.5 text-[11px] text-[#2d7a45]">
+                        <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                          <circle cx="7" cy="7" r="6" stroke="#2d7a45" strokeWidth="1.2"/>
+                          <path d="M4.5 7l2 2 3-3" stroke="#2d7a45" strokeWidth="1.3" strokeLinecap="round"/>
+                        </svg>
+                        {totals.discount} off applied
+                      </div>
+                    )}
                   </div>
-                  <button style={{
-                    fontSize: '11.5px', color: '#a0693a', background: 'none', border: 'none',
-                    cursor: 'pointer', fontFamily: "'DM Sans',sans-serif", fontWeight: '600',
-                  }}>
-                    Edit
+
+                  <div className="mb-4">
+                    <div className="flex justify-between mb-2.5 text-[13px] text-[#7a5c3a]">
+                      <span>Subtotal</span>
+                      <span>{totals.subtotal}</span>
+                    </div>
+                    <div className="flex justify-between mb-2.5 text-[13px] text-[#7a5c3a]">
+                      <span>Shipping</span>
+                      <span>{totals.shipping}</span>
+                    </div>
+                    <div className="flex justify-between mb-2.5 text-[13px] text-[#7a5c3a]">
+                      <span>Tax (8%)</span>
+                      <span>{totals.tax}</span>
+                    </div>
+                    {totals.promoApplied && (
+                      <div className="flex justify-between mb-2.5 text-[13px] text-[#2d7a45]">
+                        <span>Discount</span>
+                        <span>-{totals.discount}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between border-t border-[rgba(180,140,90,0.2)] pt-3 mt-2 text-base font-bold text-[#3d2010]">
+                      <span>Total</span>
+                      <span className="text-[#a0693a]">{totals.total}</span>
+                    </div>
+                  </div>
+
+                  {!totals.freeShipping && totals.subtotalRaw < 50 && (
+                    <div className="bg-[rgba(160,105,58,0.08)] p-2.5 rounded-lg mb-4 text-center text-xs text-[#7a4e22]">
+                      🚚 Add ${(50 - totals.subtotalRaw).toFixed(2)} more for FREE shipping
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleOrder}
+                    disabled={ordering}
+                    className={`
+                      w-full py-3.5 rounded-xl text-[15px] font-bold font-dm-sans transition
+                      ${ordering 
+                        ? 'bg-[rgba(160,105,58,0.5)] cursor-not-allowed' 
+                        : 'bg-[#a0693a] cursor-pointer hover:bg-[#8a5830]'}
+                      text-white border-none
+                    `}
+                  >
+                    {ordering ? 'Processing...' : 'Complete Purchase'}
+                  </button>
+
+                  {/* Continue Shopping - Desktop only */}
+                  <button
+                    onClick={() => navigate('/books')}
+                    className="continue-shopping hidden lg:block w-full text-center text-[#a0693a] text-xs font-medium font-dm-sans bg-none border-none cursor-pointer py-3 mt-3 hover:text-[#8a5830] transition"
+                  >
+                    ← Continue Shopping
                   </button>
                 </div>
-                {[
-                  { placeholder: 'Full Name',    val: 'Eleanor Vance' },
-                  { placeholder: 'Street',       val: '42 Nightingale Lane, Apt 4B' },
-                ].map(({ placeholder, val }) => (
-                  <input key={placeholder} defaultValue={val} placeholder={placeholder} style={{
-                    width: '100%', padding: '9px 13px', marginBottom: '8px',
-                    background: 'rgba(255,255,255,0.65)',
-                    border: '1px solid rgba(180,140,90,0.25)',
-                    borderRadius: '10px', fontSize: '12.5px', color: '#3d2f1f',
-                    fontFamily: "'DM Sans',sans-serif", outline: 'none',
-                    display: 'block',
-                  }}/>
-                ))}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  {[{ val: 'London' }, { val: 'SW1A 1AA' }].map(({ val }, i) => (
-                    <input key={i} defaultValue={val} style={{
-                      padding: '9px 13px',
-                      background: 'rgba(255,255,255,0.65)',
-                      border: '1px solid rgba(180,140,90,0.25)',
-                      borderRadius: '10px', fontSize: '12.5px', color: '#3d2f1f',
-                      fontFamily: "'DM Sans',sans-serif", outline: 'none',
-                    }}/>
-                  ))}
-                </div>
               </div>
-
-              {/* Payment */}
-              <div style={{ marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid rgba(180,140,90,0.15)' }}>
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '7px',
-                  fontSize: '13px', fontWeight: '600', color: '#3d2010',
-                  fontFamily: "'DM Sans',sans-serif", marginBottom: '14px',
-                }}>
-                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-                    <rect x="1" y="3" width="12" height="8" rx="1.5" stroke="#a0693a" strokeWidth="1.3"/>
-                    <path d="M1 6h12" stroke="#a0693a" strokeWidth="1.3"/>
-                  </svg>
-                  Payment Method
-                </div>
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
-                  {PAYMENT_METHODS.map(m => (
-                    <button key={m} onClick={() => setPayMethod(m)} style={{
-                      flex: 1, padding: '8px',
-                      background: payMethod === m ? 'rgba(160,105,58,0.14)' : 'rgba(255,255,255,0.6)',
-                      border: `1.5px solid ${payMethod === m ? '#a0693a' : 'rgba(180,140,90,0.28)'}`,
-                      borderRadius: '10px', cursor: 'pointer',
-                      fontSize: '12px', fontWeight: payMethod === m ? '700' : '400',
-                      color: payMethod === m ? '#5c3520' : '#7a5c3a',
-                      fontFamily: "'DM Sans',sans-serif",
-                    }}>
-                      {m}
-                    </button>
-                  ))}
-                </div>
-                {payMethod === 'CARD' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: '8px',
-                      padding: '9px 13px',
-                      background: 'rgba(255,255,255,0.65)',
-                      border: '1px solid rgba(180,140,90,0.25)',
-                      borderRadius: '10px', fontSize: '12.5px', color: '#9a7a5a',
-                      fontFamily: "'DM Sans',sans-serif",
-                    }}>
-                      <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="8" rx="1.5" stroke="#9a7a5a" strokeWidth="1.2"/><path d="M1 6h12" stroke="#9a7a5a" strokeWidth="1.2"/></svg>
-                      **** **** **** 4821
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                      <input defaultValue="12/26" placeholder="MM/YY" style={{ padding: '9px 13px', background: 'rgba(255,255,255,0.65)', border: '1px solid rgba(180,140,90,0.25)', borderRadius: '10px', fontSize: '12.5px', color: '#3d2f1f', fontFamily: "'DM Sans',sans-serif", outline: 'none' }}/>
-                      <input defaultValue="***" placeholder="CVV" style={{ padding: '9px 13px', background: 'rgba(255,255,255,0.65)', border: '1px solid rgba(180,140,90,0.25)', borderRadius: '10px', fontSize: '12.5px', color: '#3d2f1f', fontFamily: "'DM Sans',sans-serif", outline: 'none' }}/>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Totals */}
-              <div style={{ marginBottom: '20px' }}>
-                {[
-                  { label: 'Items Subtotal',         val: totals.subtotal },
-                  { label: 'Shipping & Handling',    val: totals.shipping },
-                  { label: `Estimated Tax (8%)`,     val: totals.tax      },
-                  totals.promoApplied ? { label: 'Promo Discount', val: `-${totals.promoDiscount.split('-')[1]?.trim() || ''}`, green: true } : null,
-                ].filter(Boolean).map(({ label, val, green }) => (
-                  <div key={label} style={{
-                    display: 'flex', justifyContent: 'space-between',
-                    fontSize: '12.5px', fontFamily: "'DM Sans',sans-serif",
-                    color: green ? '#2d7a45' : '#7a5c3a',
-                    marginBottom: '8px',
-                  }}>
-                    <span>{label}</span>
-                    <span style={{ fontWeight: '500' }}>{val}</span>
-                  </div>
-                ))}
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between',
-                  borderTop: '1px solid rgba(180,140,90,0.2)',
-                  paddingTop: '12px', marginTop: '4px',
-                  fontSize: '15px', fontWeight: '700', color: '#3d2010',
-                  fontFamily: "'DM Sans',sans-serif",
-                }}>
-                  <span>Total Order</span>
-                  <span style={{ color: '#a0693a' }}>{totals.total}</span>
-                </div>
-              </div>
-
-              {/* CTA */}
-              <button
-                onClick={handleOrder}
-                disabled={ordering}
-                style={{
-                  width: '100%', padding: '15px',
-                  background: ordering ? 'rgba(160,105,58,0.5)' : '#a0693a',
-                  color: '#fff', border: 'none', borderRadius: '16px',
-                  fontSize: '14px', fontWeight: '700',
-                  fontFamily: "'DM Sans',sans-serif",
-                  cursor: ordering ? 'not-allowed' : 'pointer',
-                  letterSpacing: '0.04em', textTransform: 'uppercase',
-                  transition: 'all 0.2s', marginBottom: '12px',
-                  boxShadow: ordering ? 'none' : '0 6px 20px rgba(160,105,58,0.35)',
-                }}
-              >
-                {ordering ? 'Processing…' : 'Complete Purchase'}
-              </button>
-
-              <p style={{
-                fontSize: '10.5px', color: '#b09070',
-                fontFamily: "'DM Sans',sans-serif",
-                textAlign: 'center', lineHeight: 1.6,
-              }}>
-                By completing your purchase, you agree to Kiddle Bookshop's Terms of Service and Privacy Policy. Secure payment handled by SunlitPay.
-              </p>
             </div>
-          </div>
+
+            {/* Continue Shopping - Mobile only */}
+            <button
+              onClick={() => navigate('/books')}
+              className="continue-shopping-mobile lg:hidden text-center text-[#a0693a] text-[13px] font-medium font-dm-sans bg-none border-none cursor-pointer py-3 mt-3 hover:text-[#8a5830] transition"
+            >
+              ← Continue Shopping
+            </button>
+          </>
         )}
       </div>
-
-      <style>{`
-        @media (max-width: 900px) {
-          .cart-grid { grid-template-columns: 1fr !important }
-        }
-      `}</style>
     </div>
   )
 }
