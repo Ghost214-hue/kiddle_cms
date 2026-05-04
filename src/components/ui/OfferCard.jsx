@@ -57,7 +57,12 @@ export default function OfferCard({
   function handleAdd(e) {
     e.preventDefault()
     e.stopPropagation()
-    onAddToCart?.({ ...book, price: salePrice })
+    onAddToCart?.({ 
+      ...book, 
+      price: originalPrice,
+      salePrice: salePrice,
+      originalPrice: originalPrice
+    })
     setAdded(true)
     setTimeout(() => setAdded(false), 1800)
   }

@@ -1,6 +1,3 @@
-/**
- * FeaturedCarousel.jsx — Responsive featured picks carousel with images
- */
 
 import { useState, useEffect, useRef } from 'react'
 import { useCart,useWishlist } from '../../context/CartContext'
@@ -97,6 +94,7 @@ function FeaturedBookCard({ book, onAddToCart, onWishlist, wishlisted = false })
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
+      position: 'relative',
     }}
     onMouseEnter={e => {
       e.currentTarget.style.transform = 'translateY(-4px)'
@@ -350,28 +348,10 @@ export default function FeaturedCarousel({
               book={book}
               onAddToCart={() => addToCart?.(book)}
               onWishlist={() => toggleWishlist?.(book)}
-              wishlisted={wishlist?.[book.slug]}
+              wishlisted={wishlist?.some(w => w.slug === book.slug)}
             />
           ))
         )}
-      </div>
-
-      {/* Mobile Scroll Hint */}
-      <div style={{
-        display: itemsPerPage === 1 ? 'flex' : 'none',
-        justifyContent: 'center',
-        gap: '8px',
-        marginTop: '20px',
-      }}>
-        <span style={{
-          fontSize: '12px',
-          color: '#B45309',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-        }}>
-          ← Swipe to see more →
-        </span>
       </div>
 
       <style>{`

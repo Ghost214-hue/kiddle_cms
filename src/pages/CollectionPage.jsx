@@ -557,19 +557,16 @@ function CheckBox({ label, checked, onChange }) {
       color: checked ? '#5c3d1e' : '#9a7a5a',
       fontFamily: "'DM Sans',sans-serif", fontWeight: checked ? '600' : '400',
     }}>
-      <div onClick={onChange} style={{
-        width: '16px', height: '16px', borderRadius: '4px', flexShrink: 0,
-        border: `1.5px solid ${checked ? '#a0693a' : 'rgba(180,140,90,0.4)'}`,
-        background: checked ? '#a0693a' : 'rgba(255,255,255,0.6)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transition: 'all 0.18s',
-      }}>
-        {checked && (
-          <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
-            <path d="M2 5l2.5 2.5 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        )}
-      </div>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        style={{
+          width: '16px', height: '16px', borderRadius: '4px', flexShrink: 0,
+          cursor: 'pointer',
+          accentColor: '#a0693a',
+        }}
+      />
       {label}
     </label>
   )
@@ -650,6 +647,7 @@ export default function CollectionPage() {
   if (selectedGrades.length)     books = books.filter(b => selectedGrades.some(g => b.categories?.includes(g)))
   if (selectedSubjects.length)   books = books.filter(b => selectedSubjects.some(s => b.categories?.includes(s)))
   if (selectedAges.length)       books = books.filter(b => selectedAges.includes(b.ageRange))
+  if (selectedFormats.length)    books = books.filter(b => selectedFormats.some(f => b.formats?.includes(f)))
   books = books.filter(b => (b.salePrice ?? b.price) >= priceRange[0] && (b.salePrice ?? b.price) <= priceRange[1])
 
   // ── Sort ──
@@ -659,7 +657,7 @@ export default function CollectionPage() {
 
   const ITEMS_PER_PAGE = 12
   const totalPages     = Math.ceil(books.length / ITEMS_PER_PAGE)
-  const displayed      = books.slice(0, page * ITEMS_PER_PAGE)
+  const displayed      = books.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
 
   function toggle(arr, setArr, val) {
     setArr(prev => prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val])
@@ -795,7 +793,7 @@ export default function CollectionPage() {
         }}>
           <Link to="/" style={{ color: '#9a7a5a', textDecoration: 'none' }}>Home</Link>
           <span style={{ color: '#c4a882' }}>›</span>
-          <Link to="/shop" style={{ color: '#9a7a5a', textDecoration: 'none' }}>Shop</Link>
+          <Link to="/books" style={{ color: '#9a7a5a', textDecoration: 'none' }}>Shop</Link>
           <span style={{ color: '#c4a882' }}>›</span>
           <span style={{ color: '#5c3d1e', fontWeight: '500' }}>{meta.label}</span>
         </div>
