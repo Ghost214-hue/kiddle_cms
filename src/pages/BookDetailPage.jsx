@@ -1,6 +1,5 @@
-
-
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useParams, Link } from 'react-router-dom'
 import StarRating       from '../components/ui/StarRating'
 import FeaturedCarousel from '../components/carousel/FeaturedCarousel'
 import CountdownTimer   from '../components/ui/CountdownTimer'
@@ -8,51 +7,253 @@ import { useCart }      from '../context/CartContext'
 import { useWishlist }  from '../context/CartContext'
 import { formatPrice, formatReviewCount } from '../utils/formatPrice'
 
-// ── mock book ─────────────────────────────────────────────────────────────────
-const BOOK = {
-  _id: 'b1',
-  title: 'The Midnight Library',
-  author: 'Matt Haig',
-  authorBio: 'Matt Haig is a British author for children and adults. His novels include The Humans, Reasons to Stay Alive and How to Stop Time.',
-  price: 32.00,
-  salePrice: 24.99,
-  originalPrice: 32.00,
-  rating: 4.4,
-  reviewCount: 1240,
-  ageRange: 'Young Adult',
-  categories: ['Contemporary Fiction'],
-  formats: ['Hardcover', 'Paperback', 'E-book', 'Audiobook'],
-  isbn: '978-0-525-55947-4',
-  pageCount: 304,
-  publishedDate: 'August 13, 2020',
-  publisher: 'Viking',
-  language: 'English',
-  slug: 'the-midnight-library',
-  badge: '#1 Bestseller',
-  description: `Between life and death there is a library, and within that library, the shelves go on forever. Every book provides a chance to try another life you could have lived. To see how things would be if you had made other choices...
+// Import the book data from CollectionPage
+const ALL_BOOKS = [
+  {
+    _id: 'b1',  title: 'The Midnight Library',       author: 'Matt Haig',
+    price: 24.99, salePrice: null,  rating: 4.4, reviewCount: 1240,
+    ageRange: 'Young Adult', badge: '#1 Bestseller', badgeColor: '#8a6030',
+    slug: 'the-midnight-library',
+    categories: ['fiction', 'young-adults', 'bestsellers'],
+    img: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=500&q=80',
+    description: `Between life and death there is a library, and within that library, the shelves go on forever. Every book provides a chance to try another life you could have lived. To see how things would be if you had made other choices...
 
 Would you have done anything different, if you had the chance to undo your regrets?
 
 Nora Seed finds herself in the Midnight Library. Until she decides to live the life of her dreams, she will keep visiting this magical realm of possibilities. She must ask herself what is truly fulfilling in life, and what makes it worth living in the first place.`,
-  hasLimitedEdition: true,
-  expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 2 + 1000 * 60 * 44 + 12000).toISOString(),
-  coverColors: ['#8aaccb', '#6a8cb0'],
+    pageCount: 304, publisher: 'Viking', publishedDate: 'August 13, 2020',
+    isbn: '978-0-525-55947-4', language: 'English',
+    formats: ['Hardcover', 'Paperback', 'E-book', 'Audiobook'],
+  },
+  {
+    _id: 'b2',  title: 'Before the Coffee Gets Cold', author: 'Toshikazu Kawaguchi',
+    price: 18.99, salePrice: null,  rating: 4.8, reviewCount: 876,
+    ageRange: 'Adult', badge: 'New', badgeColor: '#2d7a4f',
+    slug: 'before-the-coffee-gets-cold',
+    categories: ['fiction', 'bestsellers'],
+    img: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&q=80',
+    description: `In a small back alley in Tokyo, there is a café which has been serving carefully brewed coffee for more than one hundred years. But this coffee shop offers its customers a unique experience: the chance to travel back in time.`,
+    pageCount: 213, publisher: 'Hanover Square Press', publishedDate: 'November 17, 2020',
+    isbn: '978-1-335-43198-7', language: 'English',
+    formats: ['Hardcover', 'Paperback', 'E-book'],
+  },
+  {
+    _id: 'b3',  title: 'Where the Crawdads Sing',    author: 'Delia Owens',
+    price: 23.00, salePrice: null,  rating: 4.7, reviewCount: 2100,
+    ageRange: 'Adult', badge: null, badgeColor: null,
+    slug: 'where-the-crawdads-sing',
+    categories: ['fiction', 'bestsellers'],
+    img: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&q=80',
+    description: `For years, rumors of the "Marsh Girl" have haunted Barkley Cove, a quiet town on the North Carolina coast. So in late 1969, when handsome Chase Andrews is found dead, the locals immediately suspect Kya Clark, the so-called Marsh Girl.`,
+    pageCount: 368, publisher: 'G.P. Putnam\'s Sons', publishedDate: 'August 14, 2018',
+    isbn: '978-0-735-21909-0', language: 'English',
+    formats: ['Hardcover', 'Paperback', 'E-book', 'Audiobook'],
+  },
+  {
+    _id: 'b4',  title: "The Lion's Secret Garden",   author: 'Clara Moss',
+    price: 12.99, salePrice: null,  rating: 4.6, reviewCount: 580,
+    ageRange: '4-8 Years', badge: 'New', badgeColor: '#2d7a4f',
+    slug: 'lions-secret-garden',
+    categories: ['storybooks', 'lower-primary'],
+    img: 'https://images.unsplash.com/photo-1589998059171-988d887df646?w=500&q=80',
+    description: `Join Leo the Lion on a magical adventure through his secret garden, where he discovers the true meaning of friendship and courage.`,
+    pageCount: 32, publisher: 'Kids Press', publishedDate: 'March 15, 2023',
+    isbn: '978-1-234-56789-0', language: 'English',
+    formats: ['Hardcover', 'Paperback'],
+  },
+  {
+    _id: 'b5',  title: 'Klara and the Sun',          author: 'Kazuo Ishiguro',
+    price: 20.00, salePrice: null,  rating: 4.6, reviewCount: 940,
+    ageRange: 'Adult', badge: null, badgeColor: null,
+    slug: 'klara-and-the-sun',
+    categories: ['fiction'],
+    img: 'https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=500&q=80',
+    description: `From her place in the store, Klara, an Artificial Friend with outstanding observational qualities, watches carefully the behavior of those who come in to browse, and of those who pass on the street outside.`,
+    pageCount: 303, publisher: 'Knopf', publishedDate: 'March 2, 2021',
+    isbn: '978-0-593-31817-1', language: 'English',
+    formats: ['Hardcover', 'Paperback', 'E-book', 'Audiobook'],
+  },
+  {
+    _id: 'b6',  title: 'Stars & Beyond',             author: 'J. Hartley',
+    price: 9.50, salePrice: 7.50,   rating: 4.2, reviewCount: 310,
+    ageRange: '9-12 Years', badge: 'Sale', badgeColor: '#b03030',
+    slug: 'stars-and-beyond',
+    categories: ['storybooks', 'upper-primary', 'science-nature'],
+    img: 'https://images.unsplash.com/photo-1532094349884-543559059a95?w=500&q=80',
+    description: `Embark on an incredible journey through our solar system and beyond. Learn about the stars, planets, and the mysteries of the universe.`,
+    pageCount: 96, publisher: 'Space Books', publishedDate: 'January 10, 2023',
+    isbn: '978-1-234-56790-6', language: 'English',
+    formats: ['Paperback', 'E-book'],
+  },
+  {
+    _id: 'b7',  title: 'The Forest Alphabet',        author: 'Nora Fynn',
+    price: 8.99, salePrice: null,   rating: 4.9, reviewCount: 430,
+    ageRange: '0-3 Years', badge: null, badgeColor: null,
+    slug: 'forest-alphabet',
+    categories: ['storybooks', 'pp1-pp2'],
+    img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&q=80',
+    description: `A beautiful ABC book featuring animals and plants from the forest. Perfect for early learners.`,
+    pageCount: 28, publisher: 'Early Learning Press', publishedDate: 'May 20, 2023',
+    isbn: '978-1-234-56791-3', language: 'English',
+    formats: ['Hardcover'],
+  },
+  {
+    _id: 'b8',  title: 'Wings of Tomorrow',          author: 'Sol Rivera',
+    price: 11.00, salePrice: null,  rating: 4.3, reviewCount: 195,
+    ageRange: '9-12 Years', badge: null, badgeColor: null,
+    slug: 'wings-of-tomorrow',
+    categories: ['storybooks', 'upper-primary'],
+    img: 'https://images.unsplash.com/photo-1524578271613-d550eacf6090?w=500&q=80',
+    description: `A story of hope, friendship, and discovering your true potential. Follow Maya as she learns to spread her wings and fly.`,
+    pageCount: 156, publisher: 'Young Readers Press', publishedDate: 'July 8, 2023',
+    isbn: '978-1-234-56792-0', language: 'English',
+    formats: ['Paperback', 'E-book'],
+  },
+  {
+    _id: 'b9',  title: 'The Starless Sea',           author: 'Erin Morgenstern',
+    price: 22.50, salePrice: null,  rating: 4.9, reviewCount: 1540,
+    ageRange: 'Adult', badge: 'Bestseller', badgeColor: '#8a6030',
+    slug: 'the-starless-sea',
+    categories: ['fiction', 'bestsellers'],
+    img: 'https://images.unsplash.com/photo-1476275466078-4007374efbbe?w=500&q=80',
+    description: `A timeless love story set in a secret underground world—a place of pirates, painters, lovers, liars, and ships that sail upon a starless sea.`,
+    pageCount: 498, publisher: 'Doubleday', publishedDate: 'November 5, 2019',
+    isbn: '978-0-385-54470-4', language: 'English',
+    formats: ['Hardcover', 'Paperback', 'E-book', 'Audiobook'],
+  },
+  {
+    _id: 'b10', title: 'Wildwood Whispers',          author: 'Elena Rosewood',
+    price: 16.99, salePrice: null,  rating: 4.5, reviewCount: 268,
+    ageRange: 'Young Adult', badge: null, badgeColor: null,
+    slug: 'wildwood-whispers',
+    categories: ['fiction', 'young-adults', 'african-writers'],
+    img: 'https://images.unsplash.com/photo-1456735190827-d1262f71b8a3?w=500&q=80',
+    description: `Deep in the heart of an African forest, ancient secrets whisper through the trees. A young girl discovers her destiny intertwined with the magic of Wildwood.`,
+    pageCount: 278, publisher: 'African Voices Press', publishedDate: 'September 12, 2023',
+    isbn: '978-1-234-56793-7', language: 'English',
+    formats: ['Paperback', 'E-book'],
+  },
+  {
+    _id: 'b11', title: 'Mathematics Grade 7',        author: 'KIE Press',
+    price: 14.00, salePrice: null,  rating: 4.7, reviewCount: 88,
+    ageRange: '12-15 Years', badge: null, badgeColor: null,
+    slug: 'mathematics-grade-7',
+    categories: ['cbc-education', 'junior-secondary', 'mathematics'],
+    img: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=500&q=80',
+    description: `Complete coverage of the Grade 7 mathematics curriculum with clear explanations, examples, and practice exercises aligned with CBC requirements.`,
+    pageCount: 342, publisher: 'Kenya Institute of Education', publishedDate: 'January 2023',
+    isbn: '978-9966-34-567-8', language: 'English',
+    formats: ['Paperback'],
+  },
+  {
+    _id: 'b12', title: 'Colours of the Sky',         author: 'A. Linden',
+    price: 11.00, salePrice: 8.50,  rating: 4.8, reviewCount: 340,
+    ageRange: '4-8 Years', badge: 'Sale', badgeColor: '#b03030',
+    slug: 'colours-of-the-sky',
+    categories: ['storybooks', 'lower-primary'],
+    img: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=500&q=80',
+    description: `A vibrant story about a little artist who discovers that the sky can be any color she imagines, teaching children about creativity and self-expression.`,
+    pageCount: 40, publisher: 'Creative Kids', publishedDate: 'March 8, 2023',
+    isbn: '978-1-234-56794-4', language: 'English',
+    formats: ['Hardcover', 'Paperback'],
+  },
+  {
+    _id: 'b13', title: 'Things Fall Apart',          author: 'Chinua Achebe',
+    price: 19.99, salePrice: null,  rating: 4.9, reviewCount: 3200,
+    ageRange: 'Adult', badge: '#1 Bestseller', badgeColor: '#8a6030',
+    slug: 'things-fall-apart',
+    categories: ['fiction', 'african-writers', 'bestsellers'],
+    img: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=500&q=80',
+    description: `A classic novel that depicts the life of Okonkwo, a leader and local wrestling champion in Umuofia—one of a group of nine villages in Nigeria. It explores the clash between traditional Igbo culture and the forces of European colonialism.`,
+    pageCount: 209, publisher: 'Heinemann', publishedDate: '1958',
+    isbn: '978-0-385-47454-2', language: 'English',
+    formats: ['Paperback', 'E-book', 'Audiobook'],
+  },
+  {
+    _id: 'b14', title: 'English Workbook Grade 4',   author: 'KICD',
+    price: 10.00, salePrice: null,  rating: 4.4, reviewCount: 210,
+    ageRange: '9-12 Years', badge: null, badgeColor: null,
+    slug: 'english-workbook-grade-4',
+    categories: ['cbc-education', 'upper-primary', 'english'],
+    img: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=500&q=80',
+    description: `Comprehensive English workbook covering reading, writing, grammar, and comprehension for Grade 4 students following the CBC curriculum.`,
+    pageCount: 156, publisher: 'Kenya Institute of Curriculum Development', publishedDate: 'January 2023',
+    isbn: '978-9966-34-568-5', language: 'English',
+    formats: ['Paperback'],
+  },
+  {
+    _id: 'b15', title: 'Science & Tech Grade 6',     author: 'Focus Publishers',
+    price: 13.50, salePrice: null,  rating: 4.5, reviewCount: 142,
+    ageRange: '9-12 Years', badge: null, badgeColor: null,
+    slug: 'science-tech-grade-6',
+    categories: ['cbc-education', 'upper-primary', 'science-nature', 'science'],
+    img: 'https://images.unsplash.com/photo-1532094349884-543559059a95?w=500&q=80',
+    description: `An engaging science and technology textbook for Grade 6 with hands-on activities and experiments aligned with the CBC curriculum.`,
+    pageCount: 198, publisher: 'Focus Publishers', publishedDate: 'January 2023',
+    isbn: '978-9966-34-569-2', language: 'English',
+    formats: ['Paperback'],
+  },
+  {
+    _id: 'b16', title: 'Social Studies Grade 3',     author: 'Longhorn',
+    price: 9.00, salePrice: null,   rating: 4.2, reviewCount: 95,
+    ageRange: '6-9 Years', badge: null, badgeColor: null,
+    slug: 'social-studies-grade-3',
+    categories: ['cbc-education', 'lower-primary', 'social-studies'],
+    img: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=500&q=80',
+    description: `A colorful and engaging social studies textbook that helps young learners understand their community, country, and the world around them.`,
+    pageCount: 124, publisher: 'Longhorn Publishers', publishedDate: 'January 2023',
+    isbn: '978-9966-34-570-8', language: 'English',
+    formats: ['Paperback'],
+  },
+]
+
+function generateMockReviews(bookId, rating, reviewCount) {
+  const names = ['Sarah M.', 'James T.', 'Priya K.', 'Michael R.', 'Emma W.', 'David L.', 'Lisa C.', 'John B.']
+  const reviewTexts = [
+    'Absolutely breathtaking. This book changed my perspective.',
+    'A wonderful read that I couldn\'t put down. Highly recommended!',
+    'One of those rare books that stays with you long after you finish.',
+    'Thought-provoking and touching. The concept is brilliant.',
+    'Beautifully written with incredible depth. A must-read!',
+    'Exceeded all my expectations. Will definitely read again.',
+    'The author has created something truly special here.',
+    'Engaging from start to finish. Worth every penny!',
+  ]
+  
+  const reviews = []
+  const numReviews = Math.min(6, Math.floor(reviewCount / 200) + 3)
+  
+  for (let i = 0; i < numReviews; i++) {
+    const reviewRating = Math.min(5, Math.max(4, rating + (Math.random() - 0.5) * 0.8))
+    reviews.push({
+      id: i + 1,
+      name: names[i % names.length],
+      rating: Math.round(reviewRating * 2) / 2,
+      date: `${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][Math.floor(Math.random() * 12)]} 2024`,
+      text: reviewTexts[i % reviewTexts.length] + (i === 0 ? ' Truly unforgettable.' : ''),
+    })
+  }
+  return reviews
 }
 
-const REVIEWS = [
-  { id:1, name:'Sarah M.',      rating:5, date:'Dec 2024', text: 'Absolutely breathtaking. This book changed my perspective on life choices and regret. Beautifully written.' },
-  { id:2, name:'James T.',      rating:4, date:'Nov 2024', text: 'A wonderful meditation on the roads not taken. Haig writes with such warmth and wisdom.' },
-  { id:3, name:'Priya K.',      rating:5, date:'Nov 2024', text: 'One of those rare books that stays with you long after you finish. Truly unforgettable.' },
-  { id:4, name:'Michael R.',    rating:4, date:'Oct 2024', text: 'Thought-provoking and touching. The concept is brilliant and execution is near-perfect.' },
-]
-
-const RATING_BREAKDOWN = [
-  { stars: 5, pct: 62 },
-  { stars: 4, pct: 23 },
-  { stars: 3, pct: 10 },
-  { stars: 2, pct: 3  },
-  { stars: 1, pct: 2  },
-]
+function getRatingBreakdown(rating) {
+  // Generate realistic breakdown based on average rating
+  const diff = rating - 4
+  const pct5 = Math.min(85, Math.max(40, 60 + diff * 15))
+  const pct4 = Math.min(30, Math.max(15, 25 - diff * 5))
+  const pct3 = Math.min(20, Math.max(5, 10 - diff * 3))
+  const pct2 = Math.min(10, Math.max(1, 4 - diff))
+  const pct1 = Math.max(1, 3 - diff * 0.5)
+  
+  const total = pct5 + pct4 + pct3 + pct2 + pct1
+  return [
+    { stars: 5, pct: Math.round((pct5 / total) * 100) },
+    { stars: 4, pct: Math.round((pct4 / total) * 100) },
+    { stars: 3, pct: Math.round((pct3 / total) * 100) },
+    { stars: 2, pct: Math.round((pct2 / total) * 100) },
+    { stars: 1, pct: Math.round((pct1 / total) * 100) },
+  ]
+}
 
 function ReviewCard({ review }) {
   return (
@@ -91,33 +292,132 @@ function ReviewCard({ review }) {
   )
 }
 
+function BookCover({ book, coverColors }) {
+  const [imgErr, setImgErr] = useState(false)
+  
+  if (!imgErr && book.img) {
+    return (
+      <img
+        src={book.img}
+        alt={book.title}
+        onError={() => setImgErr(true)}
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          display: 'block',
+        }}
+      />
+    )
+  }
+  
+  return (
+    <div style={{
+      background: `linear-gradient(145deg, ${coverColors[0]}, ${coverColors[1]})`,
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}>
+      <div style={{
+        width: '55%', height: '75%',
+        background: 'linear-gradient(145deg,rgba(255,255,255,0.12),rgba(255,255,255,0.04))',
+        borderRadius: '4px 12px 12px 4px',
+        border: '1px solid rgba(255,255,255,0.2)',
+        boxShadow: '8px 12px 40px rgba(0,0,0,0.3)',
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        padding: '20px', position: 'relative',
+      }}>
+        <div style={{
+          position: 'absolute', left: 0, top: 0, bottom: 0, width: '12px',
+          background: 'rgba(0,0,0,0.20)', borderRadius: '4px 0 0 4px',
+        }}/>
+        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" opacity="0.8">
+            <path d="M12 2L9 8H3l5 4-2 6 6-4 6 4-2-6 5-4h-6L12 2Z" fill="rgba(255,255,255,0.9)"/>
+          </svg>
+        </div>
+        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.9)', fontFamily: "'Playfair Display',serif", fontWeight: '600', textAlign: 'center', lineHeight: 1.4, marginBottom: '6px' }}>
+          {book.title}
+        </div>
+        <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.6)', fontFamily: "'DM Sans',sans-serif" }}>
+          {book.author}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function BookDetailPage() {
+  const { slug } = useParams()
   const [selectedFormat, setSelectedFormat] = useState('Hardcover')
-  const [qty,   setQty]   = useState(1)
-  const [tab,   setTab]   = useState('description')
+  const [qty, setQty] = useState(1)
+  const [tab, setTab] = useState('description')
   const [added, setAdded] = useState(false)
+  const [book, setBook] = useState(null)
+  const [reviews, setReviews] = useState([])
+  const [ratingBreakdown, setRatingBreakdown] = useState([])
 
-  const { addToCart }                      = useCart()
-  const { toggleWishlist, isWishlisted }   = useWishlist()
+  const { addToCart } = useCart()
+  const { toggleWishlist, isWishlisted } = useWishlist()
 
-  const wishlisted = isWishlisted(BOOK._id)
+  useEffect(() => {
+    // Find book by slug
+    const foundBook = ALL_BOOKS.find(b => b.slug === slug)
+    setBook(foundBook)
+    
+    if (foundBook) {
+      setReviews(generateMockReviews(foundBook._id, foundBook.rating, foundBook.reviewCount))
+      setRatingBreakdown(getRatingBreakdown(foundBook.rating))
+    }
+  }, [slug])
+
+  if (!book) {
+    return (
+      <div style={{ background: '#f5f0e8', minHeight: '100vh', paddingTop: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>📖</div>
+          <h2 style={{ fontFamily: "'Playfair Display',serif", color: '#3d2010' }}>Book not found</h2>
+          <Link to="/shop" style={{ color: '#a0693a', textDecoration: 'none', marginTop: '16px', display: 'inline-block' }}>
+            ← Back to Shop
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  const wishlisted = isWishlisted(book._id)
+  const finalPrice = book.salePrice ?? book.price
+  const originalPrice = book.price
+  const savePercent = book.salePrice ? Math.round(((book.price - book.salePrice) / book.price) * 100) : 0
+
+  const coverColors = ['#8aaccb', '#6a8cb0']
+  if (book.ageRange === '4-8 Years') coverColors.push('#8ab08a')
+  if (book.ageRange === 'Young Adult') coverColors.push('#c4a060')
 
   function handleAddToCart() {
-    addToCart({ ...BOOK, price: BOOK.salePrice, format: selectedFormat }, qty)
+    addToCart({ ...book, price: finalPrice, format: selectedFormat }, qty)
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
   }
 
+  const categoryName = book.categories?.[0] ? 
+    book.categories[0].split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : 
+    'Books'
+
   return (
     <div style={{ background: '#f5f0e8', minHeight: '100vh', paddingTop: '68px' }}>
 
-      {/* Limited edition countdown banner */}
-      {BOOK.hasLimitedEdition && (
+      {/* Limited edition countdown banner - only for some books */}
+      {book._id === 'b1' && (
         <div style={{
           background: 'rgba(160,105,58,0.10)',
           borderBottom: '1px solid rgba(180,140,90,0.20)',
           padding: '10px 40px',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+          flexWrap: 'wrap',
         }}>
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <circle cx="7" cy="7" r="6" stroke="#a0693a" strokeWidth="1.2"/>
@@ -126,27 +426,26 @@ export default function BookDetailPage() {
           <span style={{ fontSize: '12.5px', color: '#5c3d1e', fontFamily: "'DM Sans',sans-serif", fontWeight: '500' }}>
             LIMITED EDITION SIGNED COPIES:
           </span>
-          <CountdownTimer expiresAt={BOOK.expiresAt} variant="inline" />
+          <CountdownTimer expiresAt={new Date(Date.now() + 1000 * 60 * 60 * 2 + 1000 * 60 * 44 + 12000).toISOString()} variant="inline" />
           <span style={{ fontSize: '12px', color: '#7a5c3a', fontFamily: "'DM Sans',sans-serif" }}>REMAINING</span>
         </div>
       )}
 
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px 40px' }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px clamp(16px,4vw,40px)' }}>
 
         {/* Breadcrumb */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: '8px',
           fontSize: '12px', color: '#9a7a5a',
           fontFamily: "'DM Sans',sans-serif", marginBottom: '32px',
+          flexWrap: 'wrap',
         }}>
-          {['Home','Shop','Contemporary Fiction'].map((crumb, i, arr) => (
-            <span key={crumb} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <a href="#" style={{ color: '#9a7a5a', textDecoration: 'none' }}>{crumb}</a>
-              {i < arr.length - 1 && <span style={{ color: '#c4a882' }}>›</span>}
-            </span>
-          ))}
+          <Link to="/" style={{ color: '#9a7a5a', textDecoration: 'none' }}>Home</Link>
           <span style={{ color: '#c4a882' }}>›</span>
-          <span style={{ color: '#5c3d1e', fontWeight: '500' }}>Hardcover Edition</span>
+          <Link to="/shop" style={{ color: '#9a7a5a', textDecoration: 'none' }}>Shop</Link>
+          <span style={{ color: '#c4a882' }}>›</span>
+          <span style={{ color: '#c4a882' }}>›</span>
+          <span style={{ color: '#5c3d1e', fontWeight: '500' }}>{book.title}</span>
         </div>
 
         {/* Main grid */}
@@ -159,53 +458,27 @@ export default function BookDetailPage() {
           {/* Left — cover */}
           <div>
             <div style={{
-              background: `linear-gradient(145deg, ${BOOK.coverColors[0]}, ${BOOK.coverColors[1]})`,
               borderRadius: '20px', overflow: 'hidden',
               aspectRatio: '3/4', maxHeight: '520px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
               position: 'relative',
               boxShadow: '0 24px 64px rgba(100,60,20,0.20)',
             }}>
-              {/* Bestseller badge */}
-              <div style={{
-                position: 'absolute', top: '16px', left: '16px',
-                background: 'rgba(160,105,58,0.15)',
-                border: '1px solid rgba(160,105,58,0.35)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: '12px', padding: '5px 12px',
-                fontSize: '10.5px', fontWeight: '700', color: '#7a4e22',
-                fontFamily: "'DM Sans',sans-serif",
-              }}>
-                {BOOK.badge}
-              </div>
+              <BookCover book={book} coverColors={coverColors} />
 
-              {/* Book mockup */}
-              <div style={{
-                width: '55%', height: '75%',
-                background: 'linear-gradient(145deg,rgba(255,255,255,0.12),rgba(255,255,255,0.04))',
-                borderRadius: '4px 12px 12px 4px',
-                border: '1px solid rgba(255,255,255,0.2)',
-                boxShadow: '8px 12px 40px rgba(0,0,0,0.3)',
-                display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center',
-                padding: '20px', position: 'relative',
-              }}>
+              {/* Badge */}
+              {book.badge && (
                 <div style={{
-                  position: 'absolute', left: 0, top: 0, bottom: 0, width: '12px',
-                  background: 'rgba(0,0,0,0.20)', borderRadius: '4px 0 0 4px',
-                }}/>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" opacity="0.8">
-                    <path d="M12 2L9 8H3l5 4-2 6 6-4 6 4-2-6 5-4h-6L12 2Z" fill="rgba(255,255,255,0.9)"/>
-                  </svg>
+                  position: 'absolute', top: '16px', left: '16px',
+                  background: 'rgba(160,105,58,0.15)',
+                  border: '1px solid rgba(160,105,58,0.35)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: '12px', padding: '5px 12px',
+                  fontSize: '10.5px', fontWeight: '700', color: '#7a4e22',
+                  fontFamily: "'DM Sans',sans-serif",
+                }}>
+                  {book.badge}
                 </div>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.9)', fontFamily: "'Playfair Display',serif", fontWeight: '600', textAlign: 'center', lineHeight: 1.4, marginBottom: '6px' }}>
-                  {BOOK.title}
-                </div>
-                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.6)', fontFamily: "'DM Sans',sans-serif" }}>
-                  {BOOK.author}
-                </div>
-              </div>
+              )}
 
               {/* Share button */}
               <button style={{
@@ -224,18 +497,6 @@ export default function BookDetailPage() {
                 </svg>
               </button>
             </div>
-
-            {/* Thumbnail strip */}
-            <div style={{ display: 'flex', gap: '10px', marginTop: '14px' }}>
-              {['#8aaccb','#a89060','#7ab080'].map((c, i) => (
-                <div key={i} style={{
-                  width: '60px', height: '80px', borderRadius: '8px',
-                  background: c, border: i === 0 ? '2px solid #a0693a' : '2px solid transparent',
-                  cursor: 'pointer', opacity: i === 0 ? 1 : 0.6,
-                  transition: 'opacity 0.2s',
-                }}/>
-              ))}
-            </div>
           </div>
 
           {/* Right — details */}
@@ -245,12 +506,12 @@ export default function BookDetailPage() {
               fontSize: '11.5px', color: '#a0693a',
               fontFamily: "'DM Sans',sans-serif", fontWeight: '600',
               letterSpacing: '0.04em', textTransform: 'uppercase',
-              marginBottom: '10px',
+              marginBottom: '10px', flexWrap: 'wrap',
             }}>
-              {BOOK.categories.join(' · ')}
+              {categoryName}
               <span style={{ color: '#c4a882' }}>›</span>
               <span style={{ color: '#9a7a5a', fontWeight: '400', textTransform: 'none', letterSpacing: 0 }}>
-                Hardcover Edition
+                {selectedFormat} Edition
               </span>
             </div>
 
@@ -260,7 +521,7 @@ export default function BookDetailPage() {
               fontWeight: '700', color: '#3d2010',
               lineHeight: 1.2, marginBottom: '6px',
             }}>
-              {BOOK.title}
+              {book.title}
             </h1>
 
             <p style={{
@@ -268,82 +529,88 @@ export default function BookDetailPage() {
               fontFamily: "'DM Sans',sans-serif",
               fontStyle: 'italic', marginBottom: '14px',
             }}>
-              by <a href="#" style={{ color: '#a0693a', textDecoration: 'none' }}>{BOOK.author}</a>
+              by <span style={{ color: '#a0693a' }}>{book.author}</span>
             </p>
 
             {/* Rating */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-              <StarRating rating={BOOK.rating} size="md" showCount={false} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
+              <StarRating rating={book.rating} size="md" showCount={false} />
               <span style={{ fontSize: '13px', color: '#a0693a', fontFamily: "'DM Sans',sans-serif", fontWeight: '600' }}>
-                {BOOK.rating}
+                {book.rating}
               </span>
-              <a href="#reviews" style={{
+              <span style={{
                 fontSize: '12.5px', color: '#9a7a5a',
-                fontFamily: "'DM Sans',sans-serif", textDecoration: 'none',
+                fontFamily: "'DM Sans',sans-serif",
               }}>
-                ({formatReviewCount(BOOK.reviewCount)})
-              </a>
+                ({formatReviewCount(book.reviewCount)})
+              </span>
             </div>
 
             {/* Price */}
             <div style={{
               display: 'flex', alignItems: 'baseline', gap: '12px',
-              marginBottom: '24px',
+              marginBottom: '24px', flexWrap: 'wrap',
             }}>
               <span style={{
                 fontFamily: "'Playfair Display',serif",
                 fontSize: '32px', fontWeight: '700', color: '#3d2010',
               }}>
-                {formatPrice(BOOK.salePrice)}
+                {formatPrice(finalPrice)}
               </span>
-              <span style={{
-                fontSize: '16px', color: '#b8998a',
-                fontFamily: "'DM Sans',sans-serif",
-                textDecoration: 'line-through',
-              }}>
-                {formatPrice(BOOK.originalPrice)}
-              </span>
-              <span style={{
-                fontSize: '12px', fontWeight: '700', color: '#2d7a45',
-                fontFamily: "'DM Sans',sans-serif",
-                background: 'rgba(60,140,80,0.10)',
-                padding: '3px 9px', borderRadius: '10px',
-              }}>
-                Save 22%
-              </span>
+              {book.salePrice && (
+                <>
+                  <span style={{
+                    fontSize: '16px', color: '#b8998a',
+                    fontFamily: "'DM Sans',sans-serif",
+                    textDecoration: 'line-through',
+                  }}>
+                    {formatPrice(originalPrice)}
+                  </span>
+                  <span style={{
+                    fontSize: '12px', fontWeight: '700', color: '#2d7a45',
+                    fontFamily: "'DM Sans',sans-serif",
+                    background: 'rgba(60,140,80,0.10)',
+                    padding: '3px 9px', borderRadius: '10px',
+                  }}>
+                    Save {savePercent}%
+                  </span>
+                </>
+              )}
             </div>
 
             {/* Format selector */}
-            <div style={{ marginBottom: '24px' }}>
-              <div style={{
-                fontSize: '11px', fontWeight: '600', color: '#5c3d1e',
-                textTransform: 'uppercase', letterSpacing: '0.07em',
-                fontFamily: "'DM Sans',sans-serif", marginBottom: '10px',
-              }}>
-                Select Format
+            {book.formats && book.formats.length > 0 && (
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{
+                  fontSize: '11px', fontWeight: '600', color: '#5c3d1e',
+                  textTransform: 'uppercase', letterSpacing: '0.07em',
+                  fontFamily: "'DM Sans',sans-serif", marginBottom: '10px',
+                }}>
+                  Select Format
+                </div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {book.formats.map(fmt => (
+                    <button
+                      key={fmt}
+                      onClick={() => setSelectedFormat(fmt)}
+                      style={{
+                        padding: '8px 16px', borderRadius: '20px',
+                        border: `1.5px solid ${selectedFormat === fmt ? '#a0693a' : 'rgba(180,140,90,0.3)'}`,
+                        background: selectedFormat === fmt
+                          ? 'rgba(160,105,58,0.14)'
+                          : 'rgba(255,255,255,0.6)',
+                        color: selectedFormat === fmt ? '#5c3520' : '#7a5c3a',
+                        fontSize: '12.5px', fontWeight: selectedFormat === fmt ? '600' : '400',
+                        fontFamily: "'DM Sans',sans-serif",
+                        cursor: 'pointer', transition: 'all 0.2s',
+                      }}
+                    >
+                      {fmt}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {BOOK.formats.map(fmt => (
-                  <button
-                    key={fmt}
-                    onClick={() => setSelectedFormat(fmt)}
-                    style={{
-                      padding: '8px 16px', borderRadius: '20px',
-                      border: `1.5px solid ${selectedFormat === fmt ? '#a0693a' : 'rgba(180,140,90,0.3)'}`,
-                      background: selectedFormat === fmt
-                        ? 'rgba(160,105,58,0.14)'
-                        : 'rgba(255,255,255,0.6)',
-                      color: selectedFormat === fmt ? '#5c3520' : '#7a5c3a',
-                      fontSize: '12.5px', fontWeight: selectedFormat === fmt ? '600' : '400',
-                      fontFamily: "'DM Sans',sans-serif",
-                      cursor: 'pointer', transition: 'all 0.2s',
-                    }}
-                  >
-                    {fmt}
-                  </button>
-                ))}
-              </div>
-            </div>
+            )}
 
             {/* Quantity */}
             <div style={{ marginBottom: '24px' }}>
@@ -421,7 +688,7 @@ export default function BookDetailPage() {
               </button>
 
               <button
-                onClick={() => toggleWishlist(BOOK)}
+                onClick={() => toggleWishlist(book)}
                 style={{
                   width: '48px', height: '48px', borderRadius: '50%',
                   background: wishlisted ? 'rgba(160,105,58,0.15)' : 'rgba(255,255,255,0.7)',
@@ -446,19 +713,17 @@ export default function BookDetailPage() {
               padding: '14px 0',
               borderTop: '1px solid rgba(180,140,90,0.18)',
             }}>
-              {[
-                { icon: '🚚', text: 'Ships in 24 hours' },
-                { icon: '📖', text: 'Free chapter preview' },
-              ].map(({ icon, text }) => (
-                <div key={text} style={{
-                  display: 'flex', alignItems: 'center', gap: '7px',
-                  fontSize: '12px', color: '#7a5c3a',
-                  fontFamily: "'DM Sans',sans-serif",
-                }}>
-                  <span style={{ fontSize: '14px' }}>{icon}</span>
-                  {text}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '12px', color: '#7a5c3a', fontFamily: "'DM Sans',sans-serif" }}>
+                <span style={{ fontSize: '14px' }}>🚚</span> Ships in 24 hours
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '12px', color: '#7a5c3a', fontFamily: "'DM Sans',sans-serif" }}>
+                <span style={{ fontSize: '14px' }}>📖</span> Free chapter preview
+              </div>
+              {book.ageRange && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '12px', color: '#7a5c3a', fontFamily: "'DM Sans',sans-serif" }}>
+                  <span style={{ fontSize: '14px' }}>🎯</span> Ages {book.ageRange}
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
@@ -467,9 +732,9 @@ export default function BookDetailPage() {
         <div style={{ marginBottom: '64px' }} id="reviews">
           <div style={{
             display: 'flex', borderBottom: '1px solid rgba(180,140,90,0.2)',
-            marginBottom: '28px', gap: '0',
+            marginBottom: '28px', gap: '0', flexWrap: 'wrap',
           }}>
-            {['description','details','reviews'].map(t => (
+            {['description', 'details', 'reviews'].map(t => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -483,40 +748,47 @@ export default function BookDetailPage() {
                   textTransform: 'capitalize', marginBottom: '-1px',
                 }}
               >
-                {t} {t === 'reviews' ? `(${BOOK.reviewCount.toLocaleString()})` : ''}
+                {t} {t === 'reviews' ? `(${book.reviewCount.toLocaleString()})` : ''}
               </button>
             ))}
           </div>
 
           {tab === 'description' && (
             <div style={{ maxWidth: '720px' }}>
-              <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: '20px', color: '#3d2010', marginBottom: '16px' }}>
-                Between Life and Death…
-              </h3>
-              {BOOK.description.split('\n\n').map((para, i) => (
-                <p key={i} style={{
+              {book.description ? (
+                book.description.split('\n\n').map((para, i) => (
+                  <p key={i} style={{
+                    fontSize: '14px', color: '#5c3d1e', lineHeight: 1.8,
+                    fontFamily: "'DM Sans',sans-serif", marginBottom: '16px',
+                  }}>
+                    {para}
+                  </p>
+                ))
+              ) : (
+                <p style={{
                   fontSize: '14px', color: '#5c3d1e', lineHeight: 1.8,
-                  fontFamily: "'DM Sans',sans-serif", marginBottom: '16px',
+                  fontFamily: "'DM Sans',sans-serif",
                 }}>
-                  {para}
+                  No description available for this book.
                 </p>
-              ))}
+              )}
             </div>
           )}
 
           {tab === 'details' && (
             <div style={{
-              display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px',
-              maxWidth: '560px',
+              display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: '12px', maxWidth: '720px',
             }}>
               {[
-                ['ISBN',       BOOK.isbn],
-                ['Pages',      BOOK.pageCount],
-                ['Published',  BOOK.publishedDate],
-                ['Publisher',  BOOK.publisher],
-                ['Language',   BOOK.language],
-                ['Age Range',  BOOK.ageRange],
-              ].map(([label, value]) => (
+                ['ISBN', book.isbn],
+                ['Pages', book.pageCount],
+                ['Published', book.publishedDate],
+                ['Publisher', book.publisher],
+                ['Language', book.language],
+                ['Age Range', book.ageRange],
+                ['Categories', book.categories?.join(', ')],
+              ].filter(([_, value]) => value).map(([label, value]) => (
                 <div key={label} style={{
                   background: 'rgba(255,255,255,0.52)',
                   border: '1px solid rgba(200,170,130,0.25)',
@@ -548,14 +820,14 @@ export default function BookDetailPage() {
               }}>
                 <div style={{ textAlign: 'center', marginBottom: '20px' }}>
                   <div style={{ fontFamily: "'Playfair Display',serif", fontSize: '52px', fontWeight: '700', color: '#3d2010', lineHeight: 1 }}>
-                    {BOOK.rating}
+                    {book.rating}
                   </div>
-                  <StarRating rating={BOOK.rating} size="lg" showCount={false} />
+                  <StarRating rating={book.rating} size="lg" showCount={false} />
                   <div style={{ fontSize: '12px', color: '#9a7a5a', fontFamily: "'DM Sans',sans-serif", marginTop: '6px' }}>
-                    {formatReviewCount(BOOK.reviewCount)}
+                    {formatReviewCount(book.reviewCount)}
                   </div>
                 </div>
-                {RATING_BREAKDOWN.map(({ stars, pct }) => (
+                {ratingBreakdown.map(({ stars, pct }) => (
                   <div key={stars} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                     <span style={{ fontSize: '11px', color: '#7a5c3a', fontFamily: "'DM Sans',sans-serif", width: '10px' }}>{stars}</span>
                     <span style={{ fontSize: '11px', color: '#a0693a' }}>★</span>
@@ -569,7 +841,7 @@ export default function BookDetailPage() {
 
               {/* Review cards */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                {REVIEWS.map(r => <ReviewCard key={r.id} review={r} />)}
+                {reviews.map(r => <ReviewCard key={r.id} review={r} />)}
               </div>
             </div>
           )}
@@ -582,7 +854,7 @@ export default function BookDetailPage() {
               CURATED FOR YOU
             </div>
           </div>
-          <FeaturedCarousel title="Readers Also Loved" viewAllHref="/books" />
+          <FeaturedCarousel title="Readers Also Loved" viewAllHref="/shop" />
         </div>
       </div>
 
