@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { label: 'Browse Books', href: '/books'       },
   { label: 'New Arrivals', href: '/new-arrivals' },
   { label: 'Bestsellers',  href: '/bestsellers'  },
+  {label:"contact us",href:"/contact"}
 ]
 
 const DRAWER_LINKS = [
@@ -19,7 +20,7 @@ const DRAWER_LINKS = [
   { label: "Children's Collection",  href: '/category/childrens', icon: '🧒' },
   { label: 'Rare Finds',             href: '/category/rare',      icon: '🔍' },
   { label: 'Gifts & Stationery',     href: '/category/gifts',     icon: '🎁' },
-  { label: 'About Us',               href: '/about',              icon: '🌿' },
+  { label: 'contact us',               href: '/contact',              icon: '🌿' },
 ]
 
 // ── Shared icon button ────────────────────────────────────────────────────────

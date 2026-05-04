@@ -1,96 +1,206 @@
 /**
- * HomePage.jsx — Kiddle Bookshop Homepage
- * Sections: Hero · Categories · Special Offers · Featured Picks · Editorial · Why Kiddle · Book Club
+ * HomePage.jsx — Kiddle Bookshop
+ * Kenya's premier bookshop for CBC students, parents & book lovers
+ *
+ * Sections:
+ *  1. Hero       — tagline left + rotating mini-carousel right
+ *  2. Categories — 8 shop categories (grid cards with real images)
+ *  3. CBC Grade   — grade-level pills + subject pills
+ *  4. Offers      — OffersCarousel
+ *  5. Featured    — FeaturedCarousel (bestsellers)
+ *  6. Why Kiddle  — 4 trust pillars
+ *  7. Newsletter  — email signup CTA
  */
 
 import { useState, useEffect, useRef } from 'react'
-import OffersCarousel  from '../components/carousel/OffersCarousel'
+import OffersCarousel   from '../components/carousel/OffersCarousel'
 import FeaturedCarousel from '../components/carousel/FeaturedCarousel'
-import CategoryPill    from '../components/ui/CategoryPill'
-import { useCart }     from '../context/CartContext'
-import { useWishlist } from '../context/CartContext'
-import { formatPrice } from '../utils/formatPrice'
+import CategoryPill     from '../components/ui/CategoryPill'
+import { useCart }      from '../context/CartContext'
+import { useWishlist }  from '../context/CartContext'
 
-// ── mock categories ──────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────
+
 const CATEGORIES = [
-  { slug: 'all',        label: 'All Books',    icon: '📚', count: 312 },
-  { slug: 'fiction',    label: 'Fiction',      icon: '🌙', count: 98  },
-  { slug: 'childrens',  label: "Children's",   icon: '🧒', count: 76  },
-  { slug: 'educational',label: 'Educational',  icon: '🎓', count: 54  },
-  { slug: 'storybooks', label: 'Storybooks',   icon: '🌿', count: 43  },
-  { slug: 'new',        label: 'New Arrivals', icon: '✨', count: 28  },
-  { slug: 'classics',   label: 'Classics',     icon: '🏛️', count: 65  },
-  { slug: 'nature',     label: 'Nature',       icon: '🌱', count: 32  },
+  {
+    slug: 'cbc-education',
+    label: 'CBC Textbooks',
+    icon: '📚',
+    desc: 'KICD approved books',
+    img: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400&q=75',
+    accent: '#D97706',
+  },
+  {
+    slug: 'storybooks',
+    label: 'Storybooks',
+    icon: '📖',
+    desc: 'African & world tales',
+    img: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=75',
+    accent: '#059669',
+  },
+  {
+    slug: 'stationery',
+    label: 'Stationery',
+    icon: '✏️',
+    desc: 'Pens, notebooks, art',
+    img: 'https://images.unsplash.com/photo-1456735190827-d1262f71b8a3?w=400&q=75',
+    accent: '#2563EB',
+  },
+  {
+    slug: 'philosophy',
+    label: 'Philosophy & Life',
+    icon: '🤔',
+    desc: 'Mindset & growth',
+    img: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=75',
+    accent: '#7C3AED',
+  },
+  {
+    slug: 'young-adults',
+    label: 'Young Adults',
+    icon: '🌟',
+    desc: 'Teen fiction & discovery',
+    img: 'https://images.unsplash.com/photo-1524578271613-d550eacf6090?w=400&q=75',
+    accent: '#DB2777',
+  },
+  {
+    slug: 'african-writers',
+    label: 'African Writers',
+    icon: '🌍',
+    desc: 'Local & continental voices',
+    img: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=400&q=75',
+    accent: '#EA580C',
+  },
+  {
+    slug: 'science-nature',
+    label: 'Science & Nature',
+    icon: '🔬',
+    desc: 'Explore the world',
+    img: 'https://images.unsplash.com/photo-1532094349884-543559059a95?w=400&q=75',
+    accent: '#0891B2',
+  },
+  {
+    slug: 'bestsellers',
+    label: 'Bestsellers',
+    icon: '⭐',
+    desc: 'Most loved this month',
+    img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=75',
+    accent: '#B45309',
+  },
 ]
 
-// ── Why Kiddle pillars ────────────────────────────────────────────────────────
-const PILLARS = [
+const GRADE_LEVELS = [
+  { slug: 'pp1-pp2',          label: 'PP1–PP2',        icon: '🎨', age: '4–6 yrs',  count: 97  },
+  { slug: 'lower-primary',    label: 'Grade 1–3',      icon: '📖', age: '6–9 yrs',  count: 156 },
+  { slug: 'upper-primary',    label: 'Grade 4–6',      icon: '🔬', age: '9–12 yrs', count: 143 },
+  { slug: 'junior-secondary', label: 'Grade 7–9',      icon: '⚗️', age: '12–15 yrs',count: 128 },
+  { slug: 'senior-school',    label: 'Grade 10–12',    icon: '🎓', age: '15–18 yrs',count: 112 },
+]
+
+const SUBJECTS = [
+  { slug: 'mathematics',   label: 'Mathematics',    icon: '📐' },
+  { slug: 'english',       label: 'English',        icon: '📝' },
+  { slug: 'kiswahili',     label: 'Kiswahili',      icon: '🗣️' },
+  { slug: 'science',       label: 'Science & Tech', icon: '🔬' },
+  { slug: 'social-studies',label: 'Social Studies', icon: '🌍' },
+  { slug: 'cre',           label: 'CRE / IRE',      icon: '⛪' },
+  { slug: 'creative-arts', label: 'Creative Arts',  icon: '🎨' },
+  { slug: 'phe',           label: 'PE & Health',    icon: '🏃' },
+]
+
+const WHY_PILLARS = [
   {
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <path d="M4 22V6a2 2 0 012-2h16a2 2 0 012 2v16" stroke="#a0693a" strokeWidth="1.5" strokeLinecap="round"/>
-        <path d="M4 22a2 2 0 002 2h16a2 2 0 002-2" stroke="#a0693a" strokeWidth="1.5" strokeLinecap="round"/>
-        <path d="M10 8h8M10 12h6" stroke="#a0693a" strokeWidth="1.4" strokeLinecap="round"/>
-      </svg>
-    ),
-    title: 'Hand-Selected Editions',
-    desc:  'We only stock writers that feel as good as they read. From cloth-board classics to artisan papers.',
+    icon: '📚',
+    title: 'Wide Selection',
+    desc: 'CBC to philosophy — over 10,000 titles under one roof.',
+    img: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=300&q=70',
   },
   {
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <rect x="4" y="10" width="20" height="14" rx="2" stroke="#a0693a" strokeWidth="1.5"/>
-        <path d="M9 10V7a5 5 0 0110 0v3" stroke="#a0693a" strokeWidth="1.5" strokeLinecap="round"/>
-        <circle cx="14" cy="17" r="2" fill="#a0693a"/>
-      </svg>
-    ),
-    title: 'Eco-Friendly Shipping',
-    desc:  'Our book series is 100% natural, plastic-free packaging designed to protect and delight.',
+    icon: '🚚',
+    title: 'Free Delivery Kenya',
+    desc: 'Free nationwide shipping on orders above KSh 2,500.',
+    img: 'https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=300&q=70',
   },
   {
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <circle cx="14" cy="14" r="10" stroke="#a0693a" strokeWidth="1.5"/>
-        <path d="M14 8v6l4 4" stroke="#a0693a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-    title: 'Readers First',
-    desc:  'Not happy with your pick? Enjoy 30-day effortless returns and personal book recommendations.',
+    icon: '💰',
+    title: 'Best Price Guarantee',
+    desc: 'Competitive prices on all books and stationery.',
+    img: 'https://images.unsplash.com/photo-1607082349566-187342175e2f?w=300&q=70',
+  },
+  {
+    icon: '⭐',
+    title: 'Trusted by 50,000+',
+    desc: '50,000 happy families across all 47 counties.',
+    img: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=300&q=70',
   },
 ]
 
-// ── Animated number on scroll ────────────────────────────────────────────────
-function StatBadge({ value, label }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-      <div style={{
-        width: '28px', height: '28px', borderRadius: '50%',
-        overflow: 'hidden', border: '2px solid rgba(255,255,255,0.5)',
-        background: 'rgba(160,105,58,0.2)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0,
-      }}>
-        <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-          <circle cx="7" cy="5" r="2.5" fill="#a0693a"/>
-          <path d="M2 12c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="#a0693a" strokeWidth="1.3" strokeLinecap="round"/>
-        </svg>
-      </div>
-      <span style={{ fontSize: '12px', color: '#7a5c3a', fontFamily: "'DM Sans',sans-serif" }}>
-        <strong style={{ color: '#5c3d1e' }}>{value}</strong> {label}
-      </span>
-    </div>
-  )
-}
+const HERO_SLIDES = [
+  {
+    tag: '🔥 LIMITED OFFER',
+    tagBg: '#FEF3C7', tagColor: '#B45309',
+    title: 'Back to School',
+    sub:   '25% off CBC textbooks + free stationery kit on orders above KSh 3,000',
+    cta:   'Shop the Deal',
+    href:  '/category/cbc-education',
+    img:   'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=80',
+    grad:  ['#FEF9EC', '#FEF3C7'],
+    accent:'#D97706',
+  },
+  {
+    tag: '✨ NEW ARRIVALS',
+    tagBg: '#EFF6FF', tagColor: '#1D4ED8',
+    title: 'Fresh Reads',
+    sub:   'Latest philosophy, African fiction & CBC workbooks just landed this week',
+    cta:   'Explore New Titles',
+    href:  '/new-arrivals',
+    img:   'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&q=80',
+    grad:  ['#EFF6FF', '#DBEAFE'],
+    accent:'#2563EB',
+  },
+  {
+    tag: '✏️ STATIONERY',
+    tagBg: '#F0FDF4', tagColor: '#166534',
+    title: 'Premium Supplies',
+    sub:   'Japanese pens, leather-bound notebooks & complete math sets',
+    cta:   'Shop Stationery',
+    href:  '/category/stationery',
+    img:   'https://images.unsplash.com/photo-1456735190827-d1262f71b8a3?w=600&q=80',
+    grad:  ['#F0FDF4', '#DCFCE7'],
+    accent:'#059669',
+  },
+  {
+    tag: '🌍 AFRICAN VOICES',
+    tagBg: '#FFF7ED', tagColor: '#9A3412',
+    title: 'Local Stories',
+    sub:   "Ngũgĩ, Chimamanda, Yvonne Owuor — Kenya's best authors in one place",
+    cta:   'Discover Authors',
+    href:  '/category/african-writers',
+    img:   'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=600&q=80',
+    grad:  ['#FFF7ED', '#FFEDD5'],
+    accent:'#EA580C',
+  },
+]
 
-// ── Section wrapper with fade-in on scroll ───────────────────────────────────
-function Section({ children, style = {} }) {
-  const ref     = useRef(null)
+const STATS = [
+  { value: '50K+',   label: 'Happy Customers' },
+  { value: '10K+',   label: 'Book Titles'      },
+  { value: '1,200+', label: 'Partner Schools'  },
+  { value: '47',     label: 'Counties Served'  },
+]
+
+// ─────────────────────────────────────────────
+// SECTION FADE WRAPPER
+// ─────────────────────────────────────────────
+function FadeSection({ children, style = {}, delay = 0 }) {
+  const ref       = useRef(null)
   const [vis, setVis] = useState(false)
 
   useEffect(() => {
     const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVis(true); obs.disconnect() } },
-      { threshold: 0.08 }
+      ([e]) => { if (e.isIntersecting) { setVis(true); obs.disconnect() } },
+      { threshold: 0.07 }
     )
     if (ref.current) obs.observe(ref.current)
     return () => obs.disconnect()
@@ -100,9 +210,9 @@ function Section({ children, style = {} }) {
     <div
       ref={ref}
       style={{
-        opacity:    vis ? 1 : 0,
-        transform:  vis ? 'translateY(0)' : 'translateY(24px)',
-        transition: 'opacity 0.6s ease, transform 0.6s ease',
+        opacity: vis ? 1 : 0,
+        transform: vis ? 'translateY(0)' : 'translateY(28px)',
+        transition: `opacity 0.65s ease ${delay}ms, transform 0.65s ease ${delay}ms`,
         ...style,
       }}
     >
@@ -111,615 +221,829 @@ function Section({ children, style = {} }) {
   )
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
-export default function HomePage() {
-  const [activeCategory, setActiveCategory] = useState('all')
-  const [email, setEmail]   = useState('')
-  const [joined, setJoined] = useState(false)
-  const { addToCart }       = useCart()
-  const { toggleWishlist }  = useWishlist()
+// ─────────────────────────────────────────────
+// HERO CAROUSEL (right side of hero)
+// ─────────────────────────────────────────────
+function HeroCarousel() {
+  const [cur, setCur] = useState(0)
+  const [imgErr, setImgErr] = useState({})
+  const timerRef = useRef(null)
+
+  function go(n) {
+    setCur((n + HERO_SLIDES.length) % HERO_SLIDES.length)
+  }
+
+  useEffect(() => {
+    timerRef.current = setInterval(() => go(cur + 1), 4800)
+    return () => clearInterval(timerRef.current)
+  }, [cur])
+
+  const s = HERO_SLIDES[cur]
 
   return (
-    <div style={{ background: '#f5f0e8', minHeight: '100vh' }}>
+    <div style={{
+      borderRadius: '28px',
+      overflow: 'hidden',
+      background: `linear-gradient(160deg, ${s.grad[0]}, ${s.grad[1]})`,
+      boxShadow: '0 24px 60px rgba(0,0,0,0.13)',
+      border: '1px solid rgba(255,255,255,0.8)',
+      transition: 'background 0.6s ease',
+      position: 'relative',
+    }}>
+      {/* Image */}
+      <div style={{ position: 'relative', height: '220px', overflow: 'hidden' }}>
+        {!imgErr[cur] && (
+          <img
+            key={cur}
+            src={s.img}
+            alt={s.title}
+            onError={() => setImgErr(prev => ({ ...prev, [cur]: true }))}
+            style={{
+              width: '100%', height: '100%', objectFit: 'cover',
+              animation: 'ks-fadein-slide 0.6s ease both',
+            }}
+          />
+        )}
+        {imgErr[cur] && (
+          <div style={{
+            width: '100%', height: '100%',
+            background: `linear-gradient(145deg, ${s.grad[0]}, ${s.grad[1]})`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '64px',
+          }}>
+            {s.tag.split(' ')[0]}
+          </div>
+        )}
+        {/* Gradient overlay */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.30))',
+        }}/>
+        {/* Tag badge */}
+        <div style={{
+          position: 'absolute', top: '14px', left: '14px',
+          background: s.tagBg,
+          color: s.tagColor,
+          fontSize: '9.5px', fontWeight: '800',
+          padding: '4px 12px', borderRadius: '20px',
+          letterSpacing: '0.07em',
+          fontFamily: "'DM Sans', sans-serif",
+          boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+        }}>
+          {s.tag}
+        </div>
+      </div>
 
-      {/* ══════════════════════════════════════════════════════════════
-          HERO
-      ══════════════════════════════════════════════════════════════ */}
-      <section style={{
-        minHeight: '90vh',
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        alignItems: 'center',
-        gap: '0',
-        padding: '100px 60px 60px',
-        maxWidth: '1280px',
-        margin: '0 auto',
+      {/* Text body */}
+      <div style={{ padding: '22px 22px 18px' }}>
+        <h3 style={{
+          fontFamily: "'Playfair Display', serif",
+          fontSize: 'clamp(20px, 2.5vw, 26px)',
+          fontWeight: '700', color: '#1a0e04',
+          marginBottom: '8px', lineHeight: 1.25,
+          animation: 'ks-fadein-slide 0.5s ease both 0.1s',
+        }}>
+          {s.title}
+        </h3>
+        <p style={{
+          fontSize: '13px', color: '#4a3520',
+          fontFamily: "'DM Sans', sans-serif",
+          lineHeight: 1.6, marginBottom: '18px',
+          animation: 'ks-fadein-slide 0.5s ease both 0.2s',
+        }}>
+          {s.sub}
+        </p>
+        <a
+          href={s.href}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            background: s.accent, color: '#fff',
+            padding: '9px 20px', borderRadius: '24px',
+            fontSize: '12.5px', fontWeight: '700',
+            fontFamily: "'DM Sans', sans-serif",
+            textDecoration: 'none',
+            boxShadow: `0 6px 18px -4px ${s.accent}80`,
+            transition: 'opacity 0.2s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+          onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+        >
+          {s.cta}
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 6h8M7 3l3 3-3 3" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+        </a>
+      </div>
+
+      {/* Dot controls */}
+      <div style={{
+        display: 'flex', justifyContent: 'center', gap: '6px',
+        padding: '0 22px 18px',
+      }}>
+        {HERO_SLIDES.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCur(i)}
+            style={{
+              height: '5px',
+              width: cur === i ? '22px' : '5px',
+              borderRadius: '3px',
+              background: cur === i ? s.accent : 'rgba(0,0,0,0.18)',
+              border: 'none', cursor: 'pointer', padding: 0,
+              transition: 'all 0.3s ease',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Arrow controls */}
+      {[{ dir: -1, pos: 'left:10px' }, { dir: 1, pos: 'right:10px' }].map(({ dir, pos }) => (
+        <button
+          key={dir}
+          onClick={() => go(cur + dir)}
+          style={{
+            position: 'absolute', top: '90px', [dir === -1 ? 'left' : 'right']: '10px',
+            width: '30px', height: '30px', borderRadius: '50%',
+            background: 'rgba(255,255,255,0.80)',
+            border: '1px solid rgba(0,0,0,0.10)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer',
+            backdropFilter: 'blur(8px)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+            transition: 'background 0.2s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.98)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.80)'}
+        >
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+            {dir === -1
+              ? <path d="M8 2L4 6l4 4" stroke="#1a0e04" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+              : <path d="M4 2l4 4-4 4" stroke="#1a0e04" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            }
+          </svg>
+        </button>
+      ))}
+
+      <style>{`
+        @keyframes ks-fadein-slide {
+          from { opacity: 0; transform: translateY(10px) }
+          to   { opacity: 1; transform: translateY(0)     }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────
+// CATEGORY CARD
+// ─────────────────────────────────────────────
+function CategoryCard({ cat }) {
+  const [hov, setHov]       = useState(false)
+  const [imgErr, setImgErr] = useState(false)
+
+  return (
+    <a
+      href={`/category/${cat.slug}`}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: 'flex', flexDirection: 'column',
+        borderRadius: '20px', overflow: 'hidden',
+        textDecoration: 'none',
+        background: '#fff',
+        border: `1px solid ${hov ? cat.accent + '70' : 'rgba(0,0,0,0.07)'}`,
+        boxShadow: hov
+          ? `0 16px 40px -8px ${cat.accent}30`
+          : '0 2px 10px rgba(0,0,0,0.05)',
+        transform: hov ? 'translateY(-5px)' : 'translateY(0)',
+        transition: 'all 0.25s ease',
+        cursor: 'pointer',
       }}
-        className="hero-section"
+    >
+      {/* Image */}
+      <div style={{
+        height: '130px', overflow: 'hidden', position: 'relative',
+        background: `linear-gradient(145deg, ${cat.accent}22, ${cat.accent}10)`,
+        flexShrink: 0,
+      }}>
+        {!imgErr ? (
+          <img
+            src={cat.img} alt={cat.label}
+            onError={() => setImgErr(true)}
+            style={{
+              width: '100%', height: '100%', objectFit: 'cover',
+              transform: hov ? 'scale(1.06)' : 'scale(1)',
+              transition: 'transform 0.4s ease',
+            }}
+          />
+        ) : (
+          <div style={{
+            width: '100%', height: '100%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '48px',
+          }}>
+            {cat.icon}
+          </div>
+        )}
+        {/* Overlay tint */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: `linear-gradient(to top, ${cat.accent}30 0%, transparent 60%)`,
+        }}/>
+      </div>
+
+      {/* Text */}
+      <div style={{ padding: '14px 16px 16px' }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '4px',
+        }}>
+          <span style={{ fontSize: '18px', lineHeight: 1 }}>{cat.icon}</span>
+          <span style={{
+            fontFamily: "'Playfair Display', serif",
+            fontSize: '14.5px', fontWeight: '700', color: '#1a0e04',
+          }}>
+            {cat.label}
+          </span>
+        </div>
+        <p style={{
+          fontSize: '12px', color: '#7a5c3a',
+          fontFamily: "'DM Sans', sans-serif",
+          lineHeight: 1.5,
+        }}>
+          {cat.desc}
+        </p>
+      </div>
+    </a>
+  )
+}
+
+// ─────────────────────────────────────────────
+// WHY KIDDLE PILLAR CARD
+// ─────────────────────────────────────────────
+function PillarCard({ p, delay }) {
+  const [hov, setHov]       = useState(false)
+  const [imgErr, setImgErr] = useState(false)
+
+  return (
+    <FadeSection delay={delay}>
+      <div
+        onMouseEnter={() => setHov(true)}
+        onMouseLeave={() => setHov(false)}
+        style={{
+          borderRadius: '20px', overflow: 'hidden',
+          background: '#fff',
+          border: '1px solid rgba(0,0,0,0.07)',
+          boxShadow: hov ? '0 14px 36px rgba(100,60,20,0.12)' : '0 3px 12px rgba(0,0,0,0.05)',
+          transform: hov ? 'translateY(-4px)' : 'translateY(0)',
+          transition: 'all 0.25s ease',
+        }}
       >
-        {/* Left — text */}
-        <div style={{ paddingRight: '48px' }}>
+        {/* Image */}
+        <div style={{ height: '120px', overflow: 'hidden', position: 'relative' }}>
+          {!imgErr ? (
+            <img
+              src={p.img} alt={p.title}
+              onError={() => setImgErr(true)}
+              style={{
+                width: '100%', height: '100%', objectFit: 'cover',
+                transform: hov ? 'scale(1.06)' : 'scale(1)',
+                transition: 'transform 0.4s ease',
+              }}
+            />
+          ) : (
+            <div style={{
+              width: '100%', height: '100%',
+              background: 'linear-gradient(145deg, #f5f0e8, #ede5d8)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '40px',
+            }}>
+              {p.icon}
+            </div>
+          )}
+        </div>
+
+        {/* Text */}
+        <div style={{ padding: '18px 18px 20px' }}>
+          <div style={{ fontSize: '24px', marginBottom: '8px', lineHeight: 1 }}>
+            {p.icon}
+          </div>
+          <h3 style={{
+            fontFamily: "'Playfair Display', serif",
+            fontSize: '15.5px', fontWeight: '700', color: '#1a0e04', marginBottom: '6px',
+          }}>
+            {p.title}
+          </h3>
+          <p style={{
+            fontSize: '12.5px', color: '#7a5c3a',
+            fontFamily: "'DM Sans', sans-serif", lineHeight: 1.65,
+          }}>
+            {p.desc}
+          </p>
+        </div>
+      </div>
+    </FadeSection>
+  )
+}
+
+// ─────────────────────────────────────────────
+// MAIN COMPONENT
+// ─────────────────────────────────────────────
+export default function HomePage() {
+  const [activeGrade,   setActiveGrade]   = useState(null)
+  const [activeSubject, setActiveSubject] = useState(null)
+  const [email,  setEmail]  = useState('')
+  const [joined, setJoined] = useState(false)
+  const { addToCart }      = useCart()
+  const { toggleWishlist } = useWishlist()
+
+  return (
+    <div style={{ background: '#faf7f2', minHeight: '100vh' }}>
+
+      {/* ══════════════════════════════════════
+          1. HERO
+      ══════════════════════════════════════ */}
+      <section
+        className="hero-section"
+        style={{
+          minHeight: '88vh',
+          display: 'grid',
+          gridTemplateColumns: '1fr 0.85fr',
+          alignItems: 'center',
+          gap: '48px',
+          padding: 'clamp(100px,12vh,120px) clamp(20px,5vw,64px) clamp(48px,6vh,80px)',
+          maxWidth: '1280px',
+          margin: '0 auto',
+        }}
+      >
+        {/* ── Left text ── */}
+        <div>
+          {/* Kenya badge */}
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: '8px',
-            background: 'rgba(160,105,58,0.12)',
-            border: '1px solid rgba(160,105,58,0.25)',
-            borderRadius: '20px', padding: '5px 14px',
-            marginBottom: '24px',
+            background: '#FEF9EC',
+            border: '1px solid #FCD34D',
+            borderRadius: '40px', padding: '6px 16px',
+            marginBottom: '28px',
           }}>
-            <span style={{ fontSize: '10px', color: '#a0693a', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: '700', fontFamily: "'DM Sans',sans-serif" }}>
-              ✦ Curated with love
+            <span style={{ fontSize: '17px' }}>🇰🇪</span>
+            <span style={{
+              fontSize: '11px', color: '#B45309',
+              fontWeight: '700', letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              fontFamily: "'DM Sans', sans-serif",
+            }}>
+              Kenya's Favourite Bookshop
             </span>
           </div>
 
           <h1 style={{
             fontFamily: "'Playfair Display', serif",
-            fontSize: 'clamp(36px, 5vw, 58px)',
-            fontWeight: '700',
-            color: '#3d2010',
-            lineHeight: 1.15,
-            marginBottom: '8px',
+            fontSize: 'clamp(36px, 5vw, 60px)',
+            fontWeight: '800', color: '#1a0e04',
+            lineHeight: 1.18, marginBottom: '10px',
           }}>
-            The Art of
+            More Than Books.
           </h1>
           <h1 style={{
             fontFamily: "'Playfair Display', serif",
-            fontSize: 'clamp(36px, 5vw, 58px)',
-            fontWeight: '700',
-            color: '#a0693a',
+            fontSize: 'clamp(36px, 5vw, 60px)',
+            fontWeight: '800',
             fontStyle: 'italic',
-            lineHeight: 1.15,
-            marginBottom: '20px',
+            background: 'linear-gradient(135deg, #D97706 0%, #B45309 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            lineHeight: 1.18, marginBottom: '22px',
           }}>
-            Slow Reading
+            Inspiration.
           </h1>
 
           <p style={{
-            fontSize: '15px', color: '#7a5c3a', lineHeight: 1.75,
-            maxWidth: '420px', marginBottom: '32px',
+            fontSize: 'clamp(14px, 1.8vw, 17px)',
+            color: '#4a3520',
             fontFamily: "'DM Sans', sans-serif",
+            lineHeight: 1.75, maxWidth: '480px', marginBottom: '36px',
           }}>
-            Reconnect with your shelf. Discover hand-picked editions, artisanal stationery, and a community of kindred spirits.
+            CBC textbooks, storybooks, philosophy, stationery & African
+            literature — all under one roof.{' '}
+            <strong style={{ color: '#B45309' }}>Free delivery</strong>{' '}
+            nationwide on orders above KSh 2,500.
           </p>
 
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '36px' }}>
+          {/* CTAs */}
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '48px' }}>
             <a href="/books" style={{
               display: 'inline-flex', alignItems: 'center', gap: '8px',
-              background: '#a0693a', color: '#fff',
-              padding: '13px 28px', borderRadius: '32px',
-              fontSize: '13.5px', fontWeight: '600',
+              background: 'linear-gradient(135deg, #D97706, #B45309)',
+              color: '#fff', padding: '13px 30px', borderRadius: '40px',
+              fontSize: '14px', fontWeight: '700',
               fontFamily: "'DM Sans', sans-serif",
               textDecoration: 'none',
-              boxShadow: '0 6px 24px rgba(160,105,58,0.35)',
+              boxShadow: '0 10px 28px -6px rgba(180,83,9,0.45)',
               transition: 'all 0.2s ease',
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#8a5830'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#a0693a'; e.currentTarget.style.transform = 'translateY(0)' }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 14px 32px -6px rgba(180,83,9,0.50)' }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 10px 28px -6px rgba(180,83,9,0.45)' }}
             >
-              Shop the Collection
+              Shop All Books
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M3 7h8M8 4l3 3-3 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M3 7h8M8 4l3 3-3 3" stroke="white" strokeWidth="1.6" strokeLinecap="round"/>
               </svg>
             </a>
-            <a href="/about" style={{
-              display: 'inline-flex', alignItems: 'center',
-              background: 'rgba(255,255,255,0.6)',
-              border: '1px solid rgba(180,140,90,0.35)',
-              color: '#7a4e22', padding: '13px 24px', borderRadius: '32px',
-              fontSize: '13.5px', fontWeight: '500',
+            <a href="/category/cbc-education" style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              background: 'rgba(255,255,255,0.85)',
+              border: '1px solid rgba(0,0,0,0.10)',
+              color: '#1a0e04', padding: '13px 24px', borderRadius: '40px',
+              fontSize: '14px', fontWeight: '500',
               fontFamily: "'DM Sans', sans-serif",
               textDecoration: 'none', backdropFilter: 'blur(8px)',
-              transition: 'all 0.2s ease',
+              transition: 'background 0.2s',
             }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.85)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.6)'}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.98)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.85)'}
             >
-              Our Story
+              📚 CBC Textbooks
             </a>
           </div>
 
-          {/* Social proof */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex' }}>
-              {[...Array(4)].map((_, i) => (
-                <div key={i} style={{
-                  width: '28px', height: '28px', borderRadius: '50%',
-                  border: '2px solid #f5f0e8',
-                  background: ['#e8c99a','#c8d8e8','#d8e8c0','#e8c8d8'][i],
-                  marginLeft: i > 0 ? '-8px' : '0',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px',
+          {/* Stats row */}
+          <div style={{
+            display: 'flex', gap: 'clamp(20px, 3vw, 36px)',
+            flexWrap: 'wrap',
+            paddingTop: '24px',
+            borderTop: '1px solid rgba(0,0,0,0.08)',
+          }}>
+            {STATS.map((s, i) => (
+              <div key={i}>
+                <div style={{
+                  fontFamily: "'Playfair Display', serif",
+                  fontSize: 'clamp(22px,3vw,30px)',
+                  fontWeight: '800', color: '#B45309', lineHeight: 1,
                 }}>
-                  {['👩','👨','👧','👦'][i]}
+                  {s.value}
                 </div>
-              ))}
-            </div>
-            <span style={{ fontSize: '12px', color: '#9a7a5a', fontFamily: "'DM Sans',sans-serif" }}>
-              Joined by <strong style={{ color: '#5c3d1e' }}>12,000+</strong> readers this month
-            </span>
+                <div style={{
+                  fontSize: '11.5px', color: '#7a5c3a',
+                  fontFamily: "'DM Sans', sans-serif",
+                  marginTop: '3px',
+                }}>
+                  {s.label}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Right — book stack visual */}
-        <div style={{
-          position: 'relative', height: '480px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          {/* Soft glow blob */}
-          <div style={{
-            position: 'absolute', width: '320px', height: '320px',
-            background: 'radial-gradient(circle, rgba(160,105,58,0.15) 0%, transparent 70%)',
-            borderRadius: '50%', top: '50%', left: '50%',
-            transform: 'translate(-50%,-50%)',
-          }}/>
-
-          {/* Book stack container */}
-          <div style={{
-            position: 'relative', width: '280px', height: '340px',
-            background: 'rgba(255,255,255,0.55)',
-            border: '1px solid rgba(200,170,130,0.3)',
-            borderRadius: '20px',
-            backdropFilter: 'blur(14px)',
-            overflow: 'hidden',
-            boxShadow: '0 20px 60px rgba(100,60,20,0.18)',
-          }}>
-            <img
-              src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&q=80"
-              alt="Stack of books"
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              onError={e => { e.target.style.display = 'none' }}
-            />
-            {/* Fallback illustrated stack */}
-            <div style={{
-              position: 'absolute', inset: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexDirection: 'column', gap: '8px', padding: '24px',
-            }}>
-              {[
-                { bg: '#c9965a', title: 'The Corporate Startup', w: '85%' },
-                { bg: '#8aaccb', title: 'Value Proposition Design', w: '78%' },
-                { bg: '#9aba6a', title: 'Zero to One', w: '90%' },
-              ].map((b, i) => (
-                <div key={i} style={{
-                  width: b.w, height: '52px',
-                  background: b.bg,
-                  borderRadius: '4px 6px 6px 4px',
-                  display: 'flex', alignItems: 'center', padding: '0 12px',
-                  position: 'relative',
-                  boxShadow: '2px 4px 12px rgba(0,0,0,0.15)',
-                }}>
-                  <div style={{
-                    position: 'absolute', left: 0, top: 0, bottom: 0,
-                    width: '8px', background: 'rgba(0,0,0,0.15)',
-                    borderRadius: '4px 0 0 4px',
-                  }}/>
-                  <span style={{
-                    fontSize: '9px', color: 'rgba(255,255,255,0.9)',
-                    fontFamily: "'Playfair Display',serif", fontWeight: '600',
-                    marginLeft: '10px',
-                  }}>
-                    {b.title}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Floating badge */}
-            <div style={{
-              position: 'absolute', bottom: '16px', right: '16px',
-              background: 'rgba(245,240,232,0.95)',
-              border: '1px solid rgba(180,140,90,0.3)',
-              borderRadius: '14px', padding: '10px 14px',
-              backdropFilter: 'blur(12px)',
-              boxShadow: '0 6px 20px rgba(100,60,20,0.12)',
-            }}>
-              <div style={{ fontSize: '9px', color: '#9a7a5a', fontFamily: "'DM Sans',sans-serif", marginBottom: '2px' }}>
-                This month's pick
-              </div>
-              <div style={{ fontSize: '12px', fontFamily: "'Playfair Display',serif", fontWeight: '600', color: '#3d2010' }}>
-                The Midnight Library
-              </div>
-            </div>
-          </div>
-
-          {/* Floating review card */}
-          <div style={{
-            position: 'absolute', top: '40px', right: '-20px',
-            background: 'rgba(255,255,255,0.82)',
-            border: '1px solid rgba(200,170,130,0.3)',
-            borderRadius: '16px', padding: '12px 16px',
-            backdropFilter: 'blur(12px)',
-            boxShadow: '0 8px 24px rgba(100,60,20,0.12)',
-            maxWidth: '150px',
-            animation: 'ks-float 4s ease-in-out infinite',
-          }}>
-            <div style={{ display: 'flex', gap: '2px', marginBottom: '5px' }}>
-              {[...Array(5)].map((_, i) => (
-                <span key={i} style={{ fontSize: '10px', color: '#a0693a' }}>★</span>
-              ))}
-            </div>
-            <div style={{ fontSize: '10.5px', color: '#5c3d1e', fontFamily: "'DM Sans',sans-serif", lineHeight: 1.4 }}>
-              "A sanctuary for the curious mind."
-            </div>
-          </div>
-        </div>
+        {/* ── Right: hero carousel ── */}
+        <HeroCarousel />
 
         <style>{`
-          @keyframes ks-float {
-            0%,100% { transform: translateY(0) }
-            50%      { transform: translateY(-10px) }
-          }
-          @media (max-width: 768px) {
+          @media (max-width: 900px) {
             .hero-section {
               grid-template-columns: 1fr !important;
-              padding: 88px 20px 40px !important;
+              gap: 32px !important;
               text-align: center;
             }
-            .hero-section > div:first-child { padding-right: 0 !important }
-            .hero-section > div:last-child  { display: none !important }
+            .hero-section > div:first-child {
+              align-items: center;
+              display: flex;
+              flex-direction: column;
+            }
           }
         `}</style>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════
-          CATEGORIES
-      ══════════════════════════════════════════════════════════════ */}
-      <Section style={{ padding: '0 60px 48px', maxWidth: '1280px', margin: '0 auto' }}>
+      {/* ══════════════════════════════════════
+          2. SHOP CATEGORIES
+      ══════════════════════════════════════ */}
+      <FadeSection style={{ padding: '56px clamp(20px,5vw,64px)', maxWidth: '1280px', margin: '0 auto' }}>
         <div style={{
-          display: 'flex', alignItems: 'center',
-          justifyContent: 'space-between', marginBottom: '18px',
+          display: 'flex', alignItems: 'flex-end',
+          justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '12px',
         }}>
-          <h2 style={{
-            fontFamily: "'Playfair Display',serif",
-            fontSize: '22px', fontWeight: '600', color: '#3d2010',
-          }}>
-            Explore by Genre
-          </h2>
+          <div>
+            <div style={{
+              fontSize: '11px', fontWeight: '700', color: '#D97706',
+              letterSpacing: '0.1em', textTransform: 'uppercase',
+              fontFamily: "'DM Sans', sans-serif", marginBottom: '6px',
+            }}>
+              Browse the store
+            </div>
+            <h2 style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: 'clamp(22px, 3.5vw, 32px)',
+              fontWeight: '700', color: '#1a0e04', margin: 0,
+            }}>
+              What Would You Like to Explore?
+            </h2>
+          </div>
           <a href="/books" style={{
-            fontSize: '12px', color: '#a0693a', fontWeight: '600',
-            fontFamily: "'DM Sans',sans-serif", textDecoration: 'none',
+            fontSize: '12.5px', color: '#D97706', fontWeight: '600',
+            fontFamily: "'DM Sans', sans-serif", textDecoration: 'none',
             display: 'flex', alignItems: 'center', gap: '4px',
-          }}>
-            View All →
+            border: '1px solid rgba(217,119,6,0.3)',
+            padding: '6px 14px', borderRadius: '20px',
+            background: 'rgba(217,119,6,0.07)',
+            transition: 'background 0.2s',
+          }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(217,119,6,0.14)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(217,119,6,0.07)'}
+          >
+            View all →
           </a>
         </div>
+
         <div style={{
-          display: 'flex', gap: '10px',
-          overflowX: 'auto', paddingBottom: '6px',
-          scrollbarWidth: 'none',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+          gap: '18px',
         }}>
-          {CATEGORIES.map(cat => (
-            <CategoryPill
-              key={cat.slug}
-              label={cat.label}
-              icon={cat.icon}
-              count={cat.count}
-              active={activeCategory === cat.slug}
-              onClick={() => setActiveCategory(cat.slug)}
-              size="md"
-            />
-          ))}
+          {CATEGORIES.map(cat => <CategoryCard key={cat.slug} cat={cat} />)}
         </div>
-      </Section>
+      </FadeSection>
 
-      {/* ══════════════════════════════════════════════════════════════
-          SPECIAL OFFERS CAROUSEL
-      ══════════════════════════════════════════════════════════════ */}
-      <Section style={{ padding: '0 60px 56px', maxWidth: '1280px', margin: '0 auto' }}>
-        <OffersCarousel />
-      </Section>
-
-      <div style={{ height: '1px', background: 'rgba(180,140,90,0.18)', margin: '0 60px 56px' }}/>
-
-      {/* ══════════════════════════════════════════════════════════════
-          FEATURED PICKS
-      ══════════════════════════════════════════════════════════════ */}
-      <Section style={{ padding: '0 60px 60px', maxWidth: '1280px', margin: '0 auto' }}>
-        <FeaturedCarousel />
-      </Section>
-
-      {/* ══════════════════════════════════════════════════════════════
-          EDITORIAL PICK
-      ══════════════════════════════════════════════════════════════ */}
-      <Section style={{ padding: '0 60px 64px', maxWidth: '1280px', margin: '0 auto' }}>
-        <div style={{
-          display: 'grid', gridTemplateColumns: '240px 1fr',
-          gap: '0', borderRadius: '24px',
-          background: 'rgba(255,255,255,0.52)',
-          border: '1px solid rgba(200,170,130,0.32)',
-          backdropFilter: 'blur(14px)',
-          overflow: 'hidden',
-          boxShadow: '0 8px 40px rgba(100,60,20,0.10)',
-        }}
-          className="editorial-grid"
-        >
-          {/* Cover */}
-          <div style={{
-            background: 'linear-gradient(145deg,#2a1f14,#4a3020)',
-            minHeight: '320px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            position: 'relative', overflow: 'hidden',
-          }}>
-            <img
-              src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&q=80"
-              alt="Editorial pick"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, opacity: 0.7 }}
-              onError={e => e.target.style.display = 'none'}
-            />
-            <div style={{
-              position: 'relative', width: '100px', height: '140px',
-              background: 'linear-gradient(145deg,#3d2a18,#2a1a0e)',
-              borderRadius: '4px 10px 10px 4px',
-              boxShadow: '6px 10px 30px rgba(0,0,0,0.5)',
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center', padding: '12px',
-            }}>
-              <div style={{
-                position: 'absolute', left: 0, top: 0, bottom: 0, width: '10px',
-                background: 'rgba(0,0,0,0.3)', borderRadius: '4px 0 0 4px',
-              }}/>
-              <div style={{
-                fontSize: '10px', color: 'rgba(255,255,255,0.8)',
-                fontFamily: "'Playfair Display',serif", fontWeight: '600',
-                textAlign: 'center', lineHeight: 1.4, marginTop: '8px',
-              }}>
-                milk and honey
-              </div>
-              <div style={{
-                fontSize: '8px', color: 'rgba(255,255,255,0.5)',
-                fontFamily: "'DM Sans',sans-serif", marginTop: '4px',
-              }}>
-                rupi kaur
-              </div>
-            </div>
-          </div>
-
-          {/* Text */}
-          <div style={{ padding: '40px 44px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              background: 'rgba(160,105,58,0.12)',
-              border: '1px solid rgba(160,105,58,0.25)',
-              borderRadius: '12px', padding: '4px 12px',
-              fontSize: '10px', color: '#a0693a', fontWeight: '700',
-              fontFamily: "'DM Sans',sans-serif",
-              letterSpacing: '0.06em', textTransform: 'uppercase',
-              marginBottom: '20px', width: 'fit-content',
-            }}>
-              Editorial Pick
-            </div>
-
-            <blockquote style={{
-              fontFamily: "'Playfair Display',serif",
-              fontSize: 'clamp(18px,2.5vw,24px)',
-              fontWeight: '500', color: '#3d2010',
-              fontStyle: 'italic', lineHeight: 1.5,
-              marginBottom: '8px',
-            }}>
-              "Reading is the ultimate act of empathy."
-            </blockquote>
-            <cite style={{
-              fontSize: '12px', color: '#9a7a5a',
-              fontFamily: "'DM Sans',sans-serif",
-              fontStyle: 'normal', marginBottom: '20px',
-            }}>
-              — Emma Reed, Curating Editor
-            </cite>
-
-            <h3 style={{
-              fontFamily: "'Playfair Display',serif",
-              fontSize: '18px', fontWeight: '600', color: '#3d2010',
-              marginBottom: '10px',
-            }}>
-              The Great Reset of Imagination
-            </h3>
-            <p style={{
-              fontSize: '13px', color: '#7a5c3a', lineHeight: 1.75,
-              fontFamily: "'DM Sans',sans-serif", marginBottom: '28px',
-              maxWidth: '480px',
-            }}>
-              In our latest feature, we explore how 19th-century classics are finding new life in the modern workspace. Discover the editions that define our current zeitgeist.
-            </p>
-
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              <a href="/book/milk-and-honey" style={{
-                display: 'inline-flex', alignItems: 'center', gap: '6px',
-                background: '#a0693a', color: '#fff',
-                padding: '11px 22px', borderRadius: '24px',
-                fontSize: '12.5px', fontWeight: '600',
-                fontFamily: "'DM Sans',sans-serif", textDecoration: 'none',
-                transition: 'all 0.2s ease',
-              }}
-                onMouseEnter={e => e.currentTarget.style.background = '#8a5830'}
-                onMouseLeave={e => e.currentTarget.style.background = '#a0693a'}
-              >
-                Read the Essay
-              </a>
-              <a href="/books" style={{
-                display: 'inline-flex', alignItems: 'center', gap: '6px',
-                background: 'rgba(160,105,58,0.10)',
-                border: '1px solid rgba(160,105,58,0.28)',
-                color: '#7a4e22', padding: '11px 22px', borderRadius: '24px',
-                fontSize: '12.5px', fontFamily: "'DM Sans',sans-serif",
-                textDecoration: 'none', transition: 'all 0.2s ease',
-              }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(160,105,58,0.18)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'rgba(160,105,58,0.10)'}
-              >
-                Explore Collection →
-              </a>
-            </div>
-          </div>
-        </div>
-        <style>{`
-          @media (max-width:768px) {
-            .editorial-grid { grid-template-columns: 1fr !important }
-          }
-        `}</style>
-      </Section>
-
-      {/* ══════════════════════════════════════════════════════════════
-          WHY KIDDLE
-      ══════════════════════════════════════════════════════════════ */}
-      <Section style={{
-        padding: '56px 60px',
-        background: 'rgba(160,105,58,0.05)',
-        borderTop: '1px solid rgba(180,140,90,0.15)',
-        borderBottom: '1px solid rgba(180,140,90,0.15)',
+      {/* ══════════════════════════════════════
+          3. CBC GRADE & SUBJECT PICKER
+      ══════════════════════════════════════ */}
+      <div style={{
+        background: 'linear-gradient(to bottom, #fff8f0, #fef9ec)',
+        borderTop: '1px solid rgba(0,0,0,0.06)',
+        borderBottom: '1px solid rgba(0,0,0,0.06)',
       }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '44px' }}>
-            <h2 style={{
-              fontFamily: "'Playfair Display',serif",
-              fontSize: 'clamp(22px,3vw,30px)',
-              fontWeight: '600', color: '#3d2010', marginBottom: '10px',
+        <FadeSection style={{ padding: '52px clamp(20px,5vw,64px)', maxWidth: '1280px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              background: '#FEF9EC', border: '1px solid #FCD34D',
+              borderRadius: '20px', padding: '5px 14px', marginBottom: '12px',
             }}>
-              Why Kiddle Bookshop?
+              <span style={{ fontSize: '14px' }}>📚</span>
+              <span style={{
+                fontSize: '10.5px', color: '#B45309', fontWeight: '700',
+                letterSpacing: '0.08em', textTransform: 'uppercase',
+                fontFamily: "'DM Sans', sans-serif",
+              }}>
+                CBC Kenya Curriculum
+              </span>
+            </div>
+            <h2 style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: 'clamp(22px, 3.5vw, 32px)',
+              fontWeight: '700', color: '#1a0e04', marginBottom: '8px',
+            }}>
+              Find Books by Grade or Subject
             </h2>
             <p style={{
-              fontSize: '13.5px', color: '#9a7a5a',
-              fontFamily: "'DM Sans',sans-serif", maxWidth: '400px', margin: '0 auto', lineHeight: 1.7,
+              fontSize: '14px', color: '#7a5c3a',
+              fontFamily: "'DM Sans', sans-serif",
+              maxWidth: '500px', margin: '0 auto', lineHeight: 1.7,
             }}>
-              More than just a store, we are a sanctuary for those who believe in the tangible magic of a physical book.
+              KICD-approved textbooks, workbooks, and revision guides
+              for every level of the CBC curriculum
             </p>
           </div>
-          <div style={{
-            display: 'grid', gridTemplateColumns: 'repeat(3,1fr)',
-            gap: '24px',
-          }}
-            className="pillars-grid"
-          >
-            {PILLARS.map((p, i) => (
-              <div
-                key={i}
-                style={{
-                  background: 'rgba(255,255,255,0.55)',
-                  border: '1px solid rgba(200,170,130,0.28)',
-                  borderRadius: '20px', padding: '28px 24px',
-                  backdropFilter: 'blur(12px)',
-                  transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(100,60,20,0.12)' }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
-              >
-                <div style={{
-                  width: '52px', height: '52px', borderRadius: '14px',
-                  background: 'rgba(160,105,58,0.10)',
-                  border: '1px solid rgba(160,105,58,0.2)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  marginBottom: '18px',
-                }}>
-                  {p.icon}
-                </div>
-                <h3 style={{
-                  fontFamily: "'Playfair Display',serif",
-                  fontSize: '16px', fontWeight: '600', color: '#3d2010', marginBottom: '8px',
-                }}>
-                  {p.title}
-                </h3>
-                <p style={{
-                  fontSize: '13px', color: '#9a7a5a',
-                  fontFamily: "'DM Sans',sans-serif", lineHeight: 1.7,
-                }}>
-                  {p.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-          <style>{`
-            @media (max-width:768px) {
-              .pillars-grid { grid-template-columns: 1fr !important }
-            }
-          `}</style>
-        </div>
-      </Section>
 
-      {/* ══════════════════════════════════════════════════════════════
-          BOOK CLUB CTA
-      ══════════════════════════════════════════════════════════════ */}
-      <Section style={{ padding: '72px 60px', maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '20px' }}>
-          {[...Array(5)].map((_, i) => (
-            <div key={i} style={{
-              width: '28px', height: '28px', borderRadius: '50%',
-              border: '2px solid rgba(160,105,58,0.3)',
-              background: ['#e8c99a','#c8d8e8','#d8e8c0','#e8c8d8','#e8dac8'][i],
-              marginLeft: i > 0 ? '-6px' : '0',
-              fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          {/* Grade pills */}
+          <div style={{ marginBottom: '28px' }}>
+            <div style={{
+              fontSize: '12px', fontWeight: '700', color: '#7a5c3a',
+              fontFamily: "'DM Sans', sans-serif",
+              letterSpacing: '0.07em', textTransform: 'uppercase',
+              marginBottom: '12px',
             }}>
-              {['👩','👨','👧','👦','👩‍🦳'][i]}
+              By Grade Level
             </div>
-          ))}
-        </div>
-
-        <h2 style={{
-          fontFamily: "'Playfair Display',serif",
-          fontSize: 'clamp(26px,4vw,38px)',
-          fontWeight: '700', color: '#3d2010', marginBottom: '12px',
-        }}>
-          Join the Kiddle Book Club
-        </h2>
-        <p style={{
-          fontSize: '14px', color: '#9a7a5a',
-          fontFamily: "'DM Sans',sans-serif",
-          maxWidth: '420px', margin: '0 auto 32px', lineHeight: 1.75,
-        }}>
-          Receive monthly curated boxes, access to exclusive author Q&As, and 10% off all your lifetime purchases.
-        </p>
-
-        {joined ? (
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: '10px',
-            background: 'rgba(60,140,80,0.12)',
-            border: '1px solid rgba(60,140,80,0.3)',
-            borderRadius: '28px', padding: '14px 28px',
-          }}>
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <circle cx="9" cy="9" r="8" stroke="#2d7a45" strokeWidth="1.4"/>
-              <path d="M5.5 9l2.5 2.5 4.5-4.5" stroke="#2d7a45" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span style={{ fontSize: '14px', color: '#2d7a45', fontWeight: '600', fontFamily: "'DM Sans',sans-serif" }}>
-              You're in! Welcome to the club. 🎉
-            </span>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              {GRADE_LEVELS.map(g => (
+                <CategoryPill
+                  key={g.slug}
+                  label={`${g.label} · ${g.age}`}
+                  icon={g.icon}
+                  count={g.count}
+                  active={activeGrade === g.slug}
+                  onClick={() => setActiveGrade(activeGrade === g.slug ? null : g.slug)}
+                  size="md"
+                />
+              ))}
+            </div>
           </div>
-        ) : (
-          <form
-            onSubmit={e => { e.preventDefault(); if (email) setJoined(true) }}
-            style={{ display: 'flex', gap: '0', maxWidth: '420px', margin: '0 auto 14px' }}
-          >
-            <input
-              type="email" required
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="Enter your email to join…"
-              style={{
-                flex: 1, padding: '13px 20px',
-                background: 'rgba(255,255,255,0.7)',
-                border: '1px solid rgba(180,140,90,0.3)', borderRight: 'none',
-                borderRadius: '28px 0 0 28px', outline: 'none',
-                fontSize: '13px', color: '#3d2f1f',
-                fontFamily: "'DM Sans',sans-serif",
-              }}
-            />
-            <button type="submit" style={{
-              padding: '13px 24px',
-              background: '#a0693a', color: '#fff',
-              border: '1px solid #a0693a',
-              borderRadius: '0 28px 28px 0',
-              fontSize: '13px', fontWeight: '600',
-              fontFamily: "'DM Sans',sans-serif",
-              cursor: 'pointer', whiteSpace: 'nowrap',
-              transition: 'background 0.2s ease',
-            }}
-              onMouseEnter={e => e.currentTarget.style.background = '#8a5830'}
-              onMouseLeave={e => e.currentTarget.style.background = '#a0693a'}
+
+          {/* Subject pills */}
+          <div style={{ marginBottom: '32px' }}>
+            <div style={{
+              fontSize: '12px', fontWeight: '700', color: '#7a5c3a',
+              fontFamily: "'DM Sans', sans-serif",
+              letterSpacing: '0.07em', textTransform: 'uppercase',
+              marginBottom: '12px',
+            }}>
+              By Subject
+            </div>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              {SUBJECTS.map(s => (
+                <CategoryPill
+                  key={s.slug}
+                  label={s.label}
+                  icon={s.icon}
+                  active={activeSubject === s.slug}
+                  onClick={() => setActiveSubject(activeSubject === s.slug ? null : s.slug)}
+                  size="md"
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Find books CTA */}
+          {(activeGrade || activeSubject) && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '14px',
+              padding: '16px 22px',
+              background: '#FEF9EC',
+              border: '1px solid #FCD34D',
+              borderRadius: '16px',
+              flexWrap: 'wrap',
+            }}>
+              <span style={{ fontSize: '13.5px', color: '#B45309', fontFamily: "'DM Sans', sans-serif" }}>
+                {activeGrade
+                  ? `Showing books for: ${GRADE_LEVELS.find(g => g.slug === activeGrade)?.label}`
+                  : ''}
+                {activeGrade && activeSubject ? ' · ' : ''}
+                {activeSubject
+                  ? `${SUBJECTS.find(s => s.slug === activeSubject)?.label}`
+                  : ''}
+              </span>
+              <a href={`/books?grade=${activeGrade || ''}&subject=${activeSubject || ''}`}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '6px',
+                  background: '#D97706', color: '#fff',
+                  padding: '9px 20px', borderRadius: '20px',
+                  fontSize: '12.5px', fontWeight: '700',
+                  fontFamily: "'DM Sans', sans-serif", textDecoration: 'none',
+                }}>
+                Find Books →
+              </a>
+              <button onClick={() => { setActiveGrade(null); setActiveSubject(null) }}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: '12px', color: '#9a7a5a',
+                  fontFamily: "'DM Sans', sans-serif",
+                }}>
+                Clear filters
+              </button>
+            </div>
+          )}
+        </FadeSection>
+      </div>
+
+      {/* ══════════════════════════════════════
+          4. SPECIAL OFFERS CAROUSEL
+      ══════════════════════════════════════ */}
+      <FadeSection style={{ padding: '56px clamp(20px,5vw,64px)', maxWidth: '1280px', margin: '0 auto' }}>
+        <div style={{
+          background: 'linear-gradient(160deg, #fffbf2 0%, #fff8e8 100%)',
+          border: '1px solid rgba(252,211,77,0.40)',
+          borderRadius: '28px', padding: '32px 28px',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.04)',
+        }}>
+          <OffersCarousel
+            title="Special Offers"
+            subtitle="Limited-time deals on books & stationery"
+          />
+        </div>
+      </FadeSection>
+
+      {/* divider */}
+      <div style={{ height: '1px', background: 'rgba(0,0,0,0.07)', margin: '0 clamp(20px,5vw,64px)' }}/>
+
+      {/* ══════════════════════════════════════
+          5. FEATURED PICKS
+      ══════════════════════════════════════ */}
+      <FadeSection style={{ padding: '56px clamp(20px,5vw,64px)', maxWidth: '1280px', margin: '0 auto' }}>
+        <FeaturedCarousel
+          title="⭐ Bestsellers This Month"
+          viewAllHref="/books/bestsellers"
+        />
+      </FadeSection>
+
+      {/* ══════════════════════════════════════
+          6. WHY KIDDLE
+      ══════════════════════════════════════ */}
+      <div style={{
+        background: 'linear-gradient(to bottom, #fff8f0, #fef9ec)',
+        borderTop: '1px solid rgba(0,0,0,0.06)',
+        padding: '60px 0',
+      }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 clamp(20px,5vw,64px)' }}>
+          <FadeSection style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <h2 style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: 'clamp(22px, 3.5vw, 32px)',
+              fontWeight: '700', color: '#1a0e04',
+            }}>
+              Why Choose Kiddle?
+            </h2>
+            <p style={{
+              fontSize: '14px', color: '#7a5c3a',
+              fontFamily: "'DM Sans', sans-serif",
+              maxWidth: '440px', margin: '10px auto 0', lineHeight: 1.7,
+            }}>
+              More than a bookshop — a community of curious minds across Kenya
+            </p>
+          </FadeSection>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
+            gap: '20px',
+          }}>
+            {WHY_PILLARS.map((p, i) => <PillarCard key={i} p={p} delay={i * 80} />)}
+          </div>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════
+          7. NEWSLETTER
+      ══════════════════════════════════════ */}
+      <FadeSection style={{
+        padding: '64px clamp(20px,5vw,64px)',
+        maxWidth: '1280px', margin: '0 auto',
+      }}>
+        <div style={{
+          background: 'linear-gradient(135deg, #FEF9EC 0%, #FEF3C7 100%)',
+          border: '1px solid rgba(252,211,77,0.5)',
+          borderRadius: '32px', padding: 'clamp(36px,5vw,56px) clamp(24px,5vw,48px)',
+          textAlign: 'center',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.05)',
+        }}>
+          <div style={{ fontSize: '40px', marginBottom: '14px' }}>📬</div>
+          <h2 style={{
+            fontFamily: "'Playfair Display', serif",
+            fontSize: 'clamp(24px, 3.5vw, 34px)',
+            fontWeight: '700', color: '#78350F', marginBottom: '10px',
+          }}>
+            Get Book Recommendations
+          </h2>
+          <p style={{
+            fontSize: '14.5px', color: '#92400E',
+            fontFamily: "'DM Sans', sans-serif",
+            maxWidth: '440px', margin: '0 auto 28px', lineHeight: 1.75,
+          }}>
+            Weekly picks, CBC updates, author interviews & exclusive discounts —
+            join 50,000 readers across Kenya.
+          </p>
+
+          {joined ? (
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: '10px',
+              background: 'rgba(255,255,255,0.85)',
+              border: '1px solid rgba(0,0,0,0.08)',
+              borderRadius: '50px', padding: '13px 28px',
+            }}>
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <circle cx="9" cy="9" r="8" stroke="#059669" strokeWidth="1.4"/>
+                <path d="M5.5 9l2.5 2.5 4.5-4.5" stroke="#059669" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span style={{ fontSize: '14px', color: '#065F46', fontWeight: '700', fontFamily: "'DM Sans', sans-serif" }}>
+                Welcome to the Kiddle community! 🎉
+              </span>
+            </div>
+          ) : (
+            <form
+              onSubmit={e => { e.preventDefault(); if (email) setJoined(true) }}
+              style={{ display: 'flex', gap: '0', maxWidth: '440px', margin: '0 auto 12px' }}
             >
-              Join for Free
-            </button>
-          </form>
-        )}
-        <p style={{ fontSize: '11px', color: '#b09070', fontFamily: "'DM Sans',sans-serif" }}>
-          No spam. Only beautiful books. Ever.
-        </p>
-      </Section>
+              <input
+                type="email" required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="Enter your email…"
+                style={{
+                  flex: 1, padding: '13px 20px',
+                  background: 'rgba(255,255,255,0.85)',
+                  border: '1px solid rgba(0,0,0,0.10)', borderRight: 'none',
+                  borderRadius: '40px 0 0 40px', outline: 'none',
+                  fontSize: '13.5px', color: '#1a0e04',
+                  fontFamily: "'DM Sans', sans-serif",
+                }}
+              />
+              <button type="submit" style={{
+                padding: '13px 26px',
+                background: 'linear-gradient(135deg, #D97706, #B45309)',
+                color: '#fff', border: 'none',
+                borderRadius: '0 40px 40px 0',
+                fontSize: '13.5px', fontWeight: '700',
+                fontFamily: "'DM Sans', sans-serif",
+                cursor: 'pointer', whiteSpace: 'nowrap',
+              }}>
+                Subscribe
+              </button>
+            </form>
+          )}
+          <p style={{ fontSize: '11px', color: '#B45309', fontFamily: "'DM Sans', sans-serif", opacity: 0.7 }}>
+            No spam. Only great books.
+          </p>
+        </div>
+      </FadeSection>
 
     </div>
   )
