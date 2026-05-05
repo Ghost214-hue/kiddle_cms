@@ -150,7 +150,6 @@ export default function Navbar() {
   const ICON_STYLE = { opacity: 0.75 }
 
   const handleNavigation = useCallback((href, filter = null) => {
-    // If it's a books page with filter, navigate to books with query param
     if (filter && href.includes('/books')) {
       navigate(`/books?filter=${filter}`)
     } else {
@@ -282,14 +281,17 @@ export default function Navbar() {
               </button>
             </div>
 
+            {/* Mobile Icons - Wishlist, Cart, and Menu */}
             <div className="flex md:hidden items-center gap-[7px]">
-              <NavIconBtn size={36} title="Search" onClick={() => setSearchOpen(v => !v)}>
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <circle cx="6" cy="6" r="4.5" stroke={ICON_COLOR} strokeWidth="1.6" style={ICON_STYLE}/>
-                  <path d="M9.5 9.5L12.5 12.5" stroke={ICON_COLOR} strokeWidth="1.6" strokeLinecap="round" style={ICON_STYLE}/>
+              {/* Wishlist Icon on Mobile */}
+              <NavIconBtn size={36} title="Wishlist" badge={wishCount} onClick={() => handleNavigation('/wishlist')}>
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 13.5C8 13.5 1.5 9.5 1.5 5.5C1.5 3.5 3 2 5 2C6.2 2 7.2 2.7 8 3.5C8.8 2.7 9.8 2 11 2C13 2 14.5 3.5 14.5 5.5C14.5 9.5 8 13.5 8 13.5Z"
+                    stroke={ICON_COLOR} strokeWidth="1.5" style={ICON_STYLE}/>
                 </svg>
               </NavIconBtn>
 
+              {/* Cart Icon on Mobile */}
               <NavIconBtn size={36} title="Cart" badge={itemCount} onClick={() => handleNavigation('/cart')}>
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
                   <path d="M2 2H3.5L5.5 10H12L13.5 5H4.5" stroke={ICON_COLOR} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={ICON_STYLE}/>
@@ -298,6 +300,7 @@ export default function Navbar() {
                 </svg>
               </NavIconBtn>
 
+              {/* Menu Toggle Button */}
               <button
                 onClick={() => setMenuOpen(v => !v)}
                 aria-label="Toggle navigation"
@@ -321,6 +324,7 @@ export default function Navbar() {
             </div>
           </div>
 
+          {/* Mobile Search Bar - Hidden by default, can be triggered from drawer menu */}
           <div className={`
             md:hidden overflow-hidden transition-all duration-300 ease-[ease]
             ${searchOpen ? 'max-h-16' : 'max-h-0'}
@@ -384,7 +388,25 @@ export default function Navbar() {
           </button>
         </div>
 
+        {/* Add Search Option to Drawer Menu */}
         <nav className="flex-1 overflow-y-auto p-3">
+          {/* Search Option in Drawer */}
+          <button
+            onClick={() => {
+              setMenuOpen(false)
+              setSearchOpen(true)
+            }}
+            className="w-full flex items-center justify-between px-[14px] py-[11px] rounded-xl mb-[2px] text-[13.5px] font-medium bg-transparent hover:bg-[rgba(20,10,2,0.05)] text-[#1a1008] font-['DM_Sans',sans-serif] transition-colors duration-180 cursor-pointer"
+          >
+            <span className="flex items-center gap-2.5">
+              <span className="text-[15px] leading-none">🔍</span>
+              Search Books
+            </span>
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" opacity="0.3">
+              <path d="M5 3l4 4-4 4" stroke="#1a1008" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+
           {DRAWER_LINKS.map((link) => {
             const isActive = activePath === '/books' && link.filter ? 
               new URLSearchParams(location.search).get('filter') === link.filter :

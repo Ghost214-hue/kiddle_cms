@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import StarRating       from '../components/ui/StarRating'
+import StarRating from '../components/ui/StarRating'
 import FeaturedCarousel from '../components/carousel/FeaturedCarousel'
-import CountdownTimer   from '../components/ui/CountdownTimer'
-import { useCart }      from '../context/CartContext'
-import { useWishlist }  from '../context/CartContext'
+import CountdownTimer from '../components/ui/CountdownTimer'
+import { useCart } from '../context/CartContext'
+import { useWishlist } from '../context/CartContext'
 import { formatPrice, formatReviewCount } from '../utils/formatPrice'
 
 // Import the book data from CollectionPage
 const ALL_BOOKS = [
   {
-    _id: 'b1',  title: 'The Midnight Library',       author: 'Matt Haig',
-    price: 24.99, salePrice: null,  rating: 4.4, reviewCount: 1240,
+    _id: 'b1', title: 'The Midnight Library', author: 'Matt Haig',
+    price: 24.99, salePrice: null, rating: 4.4, reviewCount: 1240,
     ageRange: 'Young Adult', badge: '#1 Bestseller', badgeColor: '#8a6030',
     slug: 'the-midnight-library',
     categories: ['fiction', 'young-adults', 'bestsellers'],
@@ -26,8 +26,8 @@ Nora Seed finds herself in the Midnight Library. Until she decides to live the l
     formats: ['Hardcover', 'Paperback', 'E-book', 'Audiobook'],
   },
   {
-    _id: 'b2',  title: 'Before the Coffee Gets Cold', author: 'Toshikazu Kawaguchi',
-    price: 18.99, salePrice: null,  rating: 4.8, reviewCount: 876,
+    _id: 'b2', title: 'Before the Coffee Gets Cold', author: 'Toshikazu Kawaguchi',
+    price: 18.99, salePrice: null, rating: 4.8, reviewCount: 876,
     ageRange: 'Adult', badge: 'New', badgeColor: '#2d7a4f',
     slug: 'before-the-coffee-gets-cold',
     categories: ['fiction', 'bestsellers'],
@@ -38,8 +38,8 @@ Nora Seed finds herself in the Midnight Library. Until she decides to live the l
     formats: ['Hardcover', 'Paperback', 'E-book'],
   },
   {
-    _id: 'b3',  title: 'Where the Crawdads Sing',    author: 'Delia Owens',
-    price: 23.00, salePrice: null,  rating: 4.7, reviewCount: 2100,
+    _id: 'b3', title: 'Where the Crawdads Sing', author: 'Delia Owens',
+    price: 23.00, salePrice: null, rating: 4.7, reviewCount: 2100,
     ageRange: 'Adult', badge: null, badgeColor: null,
     slug: 'where-the-crawdads-sing',
     categories: ['fiction', 'bestsellers'],
@@ -50,8 +50,8 @@ Nora Seed finds herself in the Midnight Library. Until she decides to live the l
     formats: ['Hardcover', 'Paperback', 'E-book', 'Audiobook'],
   },
   {
-    _id: 'b4',  title: "The Lion's Secret Garden",   author: 'Clara Moss',
-    price: 12.99, salePrice: null,  rating: 4.6, reviewCount: 580,
+    _id: 'b4', title: "The Lion's Secret Garden", author: 'Clara Moss',
+    price: 12.99, salePrice: null, rating: 4.6, reviewCount: 580,
     ageRange: '4-8 Years', badge: 'New', badgeColor: '#2d7a4f',
     slug: 'lions-secret-garden',
     categories: ['storybooks', 'lower-primary'],
@@ -62,8 +62,8 @@ Nora Seed finds herself in the Midnight Library. Until she decides to live the l
     formats: ['Hardcover', 'Paperback'],
   },
   {
-    _id: 'b5',  title: 'Klara and the Sun',          author: 'Kazuo Ishiguro',
-    price: 20.00, salePrice: null,  rating: 4.6, reviewCount: 940,
+    _id: 'b5', title: 'Klara and the Sun', author: 'Kazuo Ishiguro',
+    price: 20.00, salePrice: null, rating: 4.6, reviewCount: 940,
     ageRange: 'Adult', badge: null, badgeColor: null,
     slug: 'klara-and-the-sun',
     categories: ['fiction'],
@@ -74,8 +74,8 @@ Nora Seed finds herself in the Midnight Library. Until she decides to live the l
     formats: ['Hardcover', 'Paperback', 'E-book', 'Audiobook'],
   },
   {
-    _id: 'b6',  title: 'Stars & Beyond',             author: 'J. Hartley',
-    price: 9.50, salePrice: 7.50,   rating: 4.2, reviewCount: 310,
+    _id: 'b6', title: 'Stars & Beyond', author: 'J. Hartley',
+    price: 9.50, salePrice: 7.50, rating: 4.2, reviewCount: 310,
     ageRange: '9-12 Years', badge: 'Sale', badgeColor: '#b03030',
     slug: 'stars-and-beyond',
     categories: ['storybooks', 'upper-primary', 'science-nature'],
@@ -86,8 +86,8 @@ Nora Seed finds herself in the Midnight Library. Until she decides to live the l
     formats: ['Paperback', 'E-book'],
   },
   {
-    _id: 'b7',  title: 'The Forest Alphabet',        author: 'Nora Fynn',
-    price: 8.99, salePrice: null,   rating: 4.9, reviewCount: 430,
+    _id: 'b7', title: 'The Forest Alphabet', author: 'Nora Fynn',
+    price: 8.99, salePrice: null, rating: 4.9, reviewCount: 430,
     ageRange: '0-3 Years', badge: null, badgeColor: null,
     slug: 'forest-alphabet',
     categories: ['storybooks', 'pp1-pp2'],
@@ -98,8 +98,8 @@ Nora Seed finds herself in the Midnight Library. Until she decides to live the l
     formats: ['Hardcover'],
   },
   {
-    _id: 'b8',  title: 'Wings of Tomorrow',          author: 'Sol Rivera',
-    price: 11.00, salePrice: null,  rating: 4.3, reviewCount: 195,
+    _id: 'b8', title: 'Wings of Tomorrow', author: 'Sol Rivera',
+    price: 11.00, salePrice: null, rating: 4.3, reviewCount: 195,
     ageRange: '9-12 Years', badge: null, badgeColor: null,
     slug: 'wings-of-tomorrow',
     categories: ['storybooks', 'upper-primary'],
@@ -110,8 +110,8 @@ Nora Seed finds herself in the Midnight Library. Until she decides to live the l
     formats: ['Paperback', 'E-book'],
   },
   {
-    _id: 'b9',  title: 'The Starless Sea',           author: 'Erin Morgenstern',
-    price: 22.50, salePrice: null,  rating: 4.9, reviewCount: 1540,
+    _id: 'b9', title: 'The Starless Sea', author: 'Erin Morgenstern',
+    price: 22.50, salePrice: null, rating: 4.9, reviewCount: 1540,
     ageRange: 'Adult', badge: 'Bestseller', badgeColor: '#8a6030',
     slug: 'the-starless-sea',
     categories: ['fiction', 'bestsellers'],
@@ -122,8 +122,8 @@ Nora Seed finds herself in the Midnight Library. Until she decides to live the l
     formats: ['Hardcover', 'Paperback', 'E-book', 'Audiobook'],
   },
   {
-    _id: 'b10', title: 'Wildwood Whispers',          author: 'Elena Rosewood',
-    price: 16.99, salePrice: null,  rating: 4.5, reviewCount: 268,
+    _id: 'b10', title: 'Wildwood Whispers', author: 'Elena Rosewood',
+    price: 16.99, salePrice: null, rating: 4.5, reviewCount: 268,
     ageRange: 'Young Adult', badge: null, badgeColor: null,
     slug: 'wildwood-whispers',
     categories: ['fiction', 'young-adults', 'african-writers'],
@@ -134,8 +134,8 @@ Nora Seed finds herself in the Midnight Library. Until she decides to live the l
     formats: ['Paperback', 'E-book'],
   },
   {
-    _id: 'b11', title: 'Mathematics Grade 7',        author: 'KIE Press',
-    price: 14.00, salePrice: null,  rating: 4.7, reviewCount: 88,
+    _id: 'b11', title: 'Mathematics Grade 7', author: 'KIE Press',
+    price: 14.00, salePrice: null, rating: 4.7, reviewCount: 88,
     ageRange: '12-15 Years', badge: null, badgeColor: null,
     slug: 'mathematics-grade-7',
     categories: ['cbc-education', 'junior-secondary', 'mathematics'],
@@ -146,8 +146,8 @@ Nora Seed finds herself in the Midnight Library. Until she decides to live the l
     formats: ['Paperback'],
   },
   {
-    _id: 'b12', title: 'Colours of the Sky',         author: 'A. Linden',
-    price: 11.00, salePrice: 8.50,  rating: 4.8, reviewCount: 340,
+    _id: 'b12', title: 'Colours of the Sky', author: 'A. Linden',
+    price: 11.00, salePrice: 8.50, rating: 4.8, reviewCount: 340,
     ageRange: '4-8 Years', badge: 'Sale', badgeColor: '#b03030',
     slug: 'colours-of-the-sky',
     categories: ['storybooks', 'lower-primary'],
@@ -158,8 +158,8 @@ Nora Seed finds herself in the Midnight Library. Until she decides to live the l
     formats: ['Hardcover', 'Paperback'],
   },
   {
-    _id: 'b13', title: 'Things Fall Apart',          author: 'Chinua Achebe',
-    price: 19.99, salePrice: null,  rating: 4.9, reviewCount: 3200,
+    _id: 'b13', title: 'Things Fall Apart', author: 'Chinua Achebe',
+    price: 19.99, salePrice: null, rating: 4.9, reviewCount: 3200,
     ageRange: 'Adult', badge: '#1 Bestseller', badgeColor: '#8a6030',
     slug: 'things-fall-apart',
     categories: ['fiction', 'african-writers', 'bestsellers'],
@@ -170,8 +170,8 @@ Nora Seed finds herself in the Midnight Library. Until she decides to live the l
     formats: ['Paperback', 'E-book', 'Audiobook'],
   },
   {
-    _id: 'b14', title: 'English Workbook Grade 4',   author: 'KICD',
-    price: 10.00, salePrice: null,  rating: 4.4, reviewCount: 210,
+    _id: 'b14', title: 'English Workbook Grade 4', author: 'KICD',
+    price: 10.00, salePrice: null, rating: 4.4, reviewCount: 210,
     ageRange: '9-12 Years', badge: null, badgeColor: null,
     slug: 'english-workbook-grade-4',
     categories: ['cbc-education', 'upper-primary', 'english'],
@@ -182,8 +182,8 @@ Nora Seed finds herself in the Midnight Library. Until she decides to live the l
     formats: ['Paperback'],
   },
   {
-    _id: 'b15', title: 'Science & Tech Grade 6',     author: 'Focus Publishers',
-    price: 13.50, salePrice: null,  rating: 4.5, reviewCount: 142,
+    _id: 'b15', title: 'Science & Tech Grade 6', author: 'Focus Publishers',
+    price: 13.50, salePrice: null, rating: 4.5, reviewCount: 142,
     ageRange: '9-12 Years', badge: null, badgeColor: null,
     slug: 'science-tech-grade-6',
     categories: ['cbc-education', 'upper-primary', 'science-nature', 'science'],
@@ -194,8 +194,8 @@ Nora Seed finds herself in the Midnight Library. Until she decides to live the l
     formats: ['Paperback'],
   },
   {
-    _id: 'b16', title: 'Social Studies Grade 3',     author: 'Longhorn',
-    price: 9.00, salePrice: null,   rating: 4.2, reviewCount: 95,
+    _id: 'b16', title: 'Social Studies Grade 3', author: 'Longhorn',
+    price: 9.00, salePrice: null, rating: 4.2, reviewCount: 95,
     ageRange: '6-9 Years', badge: null, badgeColor: null,
     slug: 'social-studies-grade-3',
     categories: ['cbc-education', 'lower-primary', 'social-studies'],
@@ -237,7 +237,6 @@ function generateMockReviews(bookId, rating, reviewCount) {
 }
 
 function getRatingBreakdown(rating) {
-  // Generate realistic breakdown based on average rating
   const diff = rating - 4
   const pct5 = Math.min(85, Math.max(40, 60 + diff * 15))
   const pct4 = Math.min(30, Math.max(15, 25 - diff * 5))
@@ -257,35 +256,27 @@ function getRatingBreakdown(rating) {
 
 function ReviewCard({ review }) {
   return (
-    <div style={{
-      background: 'rgba(255,255,255,0.52)',
-      border: '1px solid rgba(200,170,130,0.28)',
-      borderRadius: '16px', padding: '18px 20px',
-      backdropFilter: 'blur(12px)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            width: '36px', height: '36px', borderRadius: '50%',
-            background: `hsl(${review.id * 47}, 45%, 75%)`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '14px', fontWeight: '700', color: '#fff',
-            fontFamily: "'DM Sans',sans-serif",
-          }}>
+    <div className="bg-[rgba(255,255,255,0.52)] border border-[rgba(200,170,130,0.28)] rounded-2xl p-[18px_20px] backdrop-blur-sm transition-all duration-200 hover:shadow-md">
+      <div className="flex items-center justify-between mb-2.5">
+        <div className="flex items-center gap-2.5">
+          <div 
+            className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-white font-['DM_Sans',sans-serif]"
+            style={{ background: `hsl(${review.id * 47}, 45%, 75%)` }}
+          >
             {review.name[0]}
           </div>
           <div>
-            <div style={{ fontSize: '13px', fontWeight: '600', color: '#3d2010', fontFamily: "'DM Sans',sans-serif" }}>
+            <div className="text-[13px] font-semibold text-[#3d2010] font-['DM_Sans',sans-serif]">
               {review.name}
             </div>
-            <div style={{ fontSize: '11px', color: '#9a7a5a', fontFamily: "'DM Sans',sans-serif" }}>
+            <div className="text-[11px] text-[#9a7a5a] font-['DM_Sans',sans-serif]">
               {review.date}
             </div>
           </div>
         </div>
         <StarRating rating={review.rating} size="sm" showCount={false} />
       </div>
-      <p style={{ fontSize: '13px', color: '#5c3d1e', fontFamily: "'DM Sans',sans-serif", lineHeight: 1.7 }}>
+      <p className="text-[13px] text-[#5c3d1e] font-['DM_Sans',sans-serif] leading-[1.7]">
         {review.text}
       </p>
     </div>
@@ -301,48 +292,27 @@ function BookCover({ book, coverColors }) {
         src={book.img}
         alt={book.title}
         onError={() => setImgErr(true)}
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          display: 'block',
-        }}
+        className="w-full h-full object-cover block"
       />
     )
   }
   
   return (
-    <div style={{
-      background: `linear-gradient(145deg, ${coverColors[0]}, ${coverColors[1]})`,
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}>
-      <div style={{
-        width: '55%', height: '75%',
-        background: 'linear-gradient(145deg,rgba(255,255,255,0.12),rgba(255,255,255,0.04))',
-        borderRadius: '4px 12px 12px 4px',
-        border: '1px solid rgba(255,255,255,0.2)',
-        boxShadow: '8px 12px 40px rgba(0,0,0,0.3)',
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        padding: '20px', position: 'relative',
-      }}>
-        <div style={{
-          position: 'absolute', left: 0, top: 0, bottom: 0, width: '12px',
-          background: 'rgba(0,0,0,0.20)', borderRadius: '4px 0 0 4px',
-        }}/>
-        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" opacity="0.8">
+    <div 
+      className="w-full h-full flex items-center justify-center"
+      style={{ background: `linear-gradient(145deg, ${coverColors[0]}, ${coverColors[1]})` }}
+    >
+      <div className="w-[55%] h-[75%] bg-gradient-to-br from-white/12 to-white/04 rounded-[4px_12px_12px_4px] border border-white/20 shadow-[8px_12px_40px_rgba(0,0,0,0.3)] flex flex-col items-center justify-center p-5 relative">
+        <div className="absolute left-0 top-0 bottom-0 w-3 bg-black/20 rounded-l-[4px]" />
+        <div className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center mb-3">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="opacity-80">
             <path d="M12 2L9 8H3l5 4-2 6 6-4 6 4-2-6 5-4h-6L12 2Z" fill="rgba(255,255,255,0.9)"/>
           </svg>
         </div>
-        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.9)', fontFamily: "'Playfair Display',serif", fontWeight: '600', textAlign: 'center', lineHeight: 1.4, marginBottom: '6px' }}>
+        <div className="text-[11px] text-white/90 font-['Playfair_Display',serif] font-semibold text-center leading-[1.4] mb-1.5">
           {book.title}
         </div>
-        <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.6)', fontFamily: "'DM Sans',sans-serif" }}>
+        <div className="text-[9px] text-white/60 font-['DM_Sans',sans-serif]">
           {book.author}
         </div>
       </div>
@@ -364,7 +334,6 @@ export default function BookDetailPage() {
   const { toggleWishlist, isWishlisted } = useWishlist()
 
   useEffect(() => {
-    // Find book by slug
     const foundBook = ALL_BOOKS.find(b => b.slug === slug)
     setBook(foundBook)
     
@@ -376,11 +345,11 @@ export default function BookDetailPage() {
 
   if (!book) {
     return (
-      <div style={{ background: '#f5f0e8', minHeight: '100vh', paddingTop: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>📖</div>
-          <h2 style={{ fontFamily: "'Playfair Display',serif", color: '#3d2010' }}>Book not found</h2>
-          <Link to="/books" style={{ color: '#a0693a', textDecoration: 'none', marginTop: '16px', display: 'inline-block' }}>
+      <div className="bg-[#f5f0e8] min-h-screen pt-20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-5xl mb-4">📖</div>
+          <h2 className="font-['Playfair_Display',serif] text-2xl text-[#3d2010] mb-4">Book not found</h2>
+          <Link to="/books" className="text-[#a0693a] no-underline hover:underline">
             ← Back to Shop
           </Link>
         </div>
@@ -408,87 +377,50 @@ export default function BookDetailPage() {
     'Books'
 
   return (
-    <div style={{ background: '#f5f0e8', minHeight: '100vh', paddingTop: '68px' }}>
+    <div className="bg-[#f5f0e8] min-h-screen pt-[68px]">
 
       {/* Limited edition countdown banner - only for some books */}
       {book._id === 'b1' && (
-        <div style={{
-          background: 'rgba(160,105,58,0.10)',
-          borderBottom: '1px solid rgba(180,140,90,0.20)',
-          padding: '10px 40px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-          flexWrap: 'wrap',
-        }}>
+        <div className="bg-[rgba(160,105,58,0.10)] border-b border-[rgba(180,140,90,0.20)] py-2.5 px-10 flex items-center justify-center gap-2.5 flex-wrap">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <circle cx="7" cy="7" r="6" stroke="#a0693a" strokeWidth="1.2"/>
             <path d="M7 4v3l2 2" stroke="#a0693a" strokeWidth="1.2" strokeLinecap="round"/>
           </svg>
-          <span style={{ fontSize: '12.5px', color: '#5c3d1e', fontFamily: "'DM Sans',sans-serif", fontWeight: '500' }}>
+          <span className="text-[12.5px] text-[#5c3d1e] font-['DM_Sans',sans-serif] font-medium">
             LIMITED EDITION SIGNED COPIES:
           </span>
           <CountdownTimer expiresAt={new Date(Date.now() + 1000 * 60 * 60 * 2 + 1000 * 60 * 44 + 12000).toISOString()} variant="inline" />
-          <span style={{ fontSize: '12px', color: '#7a5c3a', fontFamily: "'DM Sans',sans-serif" }}>REMAINING</span>
+          <span className="text-xs text-[#7a5c3a] font-['DM_Sans',sans-serif]">REMAINING</span>
         </div>
       )}
 
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px clamp(16px,4vw,40px)' }}>
+      <div className="max-w-[1280px] mx-auto px-[clamp(16px,4vw,40px)] py-8">
 
         {/* Breadcrumb */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: '8px',
-          fontSize: '12px', color: '#9a7a5a',
-          fontFamily: "'DM Sans',sans-serif", marginBottom: '32px',
-          flexWrap: 'wrap',
-        }}>
-          <Link to="/" style={{ color: '#9a7a5a', textDecoration: 'none' }}>Home</Link>
-          <span style={{ color: '#c4a882' }}>›</span>
-          <Link to="/books" style={{ color: '#9a7a5a', textDecoration: 'none' }}>Books</Link>
-          <span style={{ color: '#c4a882' }}>›</span>
-          <span style={{ color: '#c4a882' }}>›</span>
-          <span style={{ color: '#5c3d1e', fontWeight: '500' }}>{book.title}</span>
+        <div className="flex items-center gap-2 text-xs text-[#9a7a5a] font-['DM_Sans',sans-serif] mb-8 flex-wrap">
+          <Link to="/" className="text-[#9a7a5a] no-underline hover:text-[#a0693a]">Home</Link>
+          <span className="text-[#c4a882]">›</span>
+          <Link to="/books" className="text-[#9a7a5a] no-underline hover:text-[#a0693a]">Books</Link>
+          <span className="text-[#c4a882]">›</span>
+          <span className="text-[#5c3d1e] font-medium">{book.title}</span>
         </div>
 
         {/* Main grid */}
-        <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr',
-          gap: '56px', marginBottom: '64px', alignItems: 'start',
-        }}
-          className="detail-grid"
-        >
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-[56px] mb-16 items-start">
           {/* Left — cover */}
           <div>
-            <div style={{
-              borderRadius: '20px', overflow: 'hidden',
-              aspectRatio: '3/4', maxHeight: '520px',
-              position: 'relative',
-              boxShadow: '0 24px 64px rgba(100,60,20,0.20)',
-            }}>
+            <div className="relative rounded-[20px] overflow-hidden aspect-[3/4] max-h-[520px] shadow-[0_24px_64px_rgba(100,60,20,0.20)]">
               <BookCover book={book} coverColors={coverColors} />
 
               {/* Badge */}
               {book.badge && (
-                <div style={{
-                  position: 'absolute', top: '16px', left: '16px',
-                  background: 'rgba(160,105,58,0.15)',
-                  border: '1px solid rgba(160,105,58,0.35)',
-                  backdropFilter: 'blur(10px)',
-                  borderRadius: '12px', padding: '5px 12px',
-                  fontSize: '10.5px', fontWeight: '700', color: '#7a4e22',
-                  fontFamily: "'DM Sans',sans-serif",
-                }}>
+                <div className="absolute top-4 left-4 bg-[rgba(160,105,58,0.15)] border border-[rgba(160,105,58,0.35)] backdrop-blur-md rounded-xl py-[5px] px-3 text-[10.5px] font-bold text-[#7a4e22] font-['DM_Sans',sans-serif]">
                   {book.badge}
                 </div>
               )}
 
               {/* Share button */}
-              <button style={{
-                position: 'absolute', bottom: '16px', right: '16px',
-                width: '36px', height: '36px', borderRadius: '50%',
-                background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(180,140,90,0.3)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer',
-              }}>
+              <button className="absolute bottom-4 right-4 w-9 h-9 rounded-full bg-white/75 backdrop-blur-sm border border-[rgba(180,140,90,0.3)] flex items-center justify-center cursor-pointer transition-all duration-200 hover:bg-white/90 hover:scale-105">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                   <circle cx="13" cy="3" r="1.5" stroke="#7a4e22" strokeWidth="1.3"/>
                   <circle cx="13" cy="13" r="1.5" stroke="#7a4e22" strokeWidth="1.3"/>
@@ -501,77 +433,44 @@ export default function BookDetailPage() {
 
           {/* Right — details */}
           <div>
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              fontSize: '11.5px', color: '#a0693a',
-              fontFamily: "'DM Sans',sans-serif", fontWeight: '600',
-              letterSpacing: '0.04em', textTransform: 'uppercase',
-              marginBottom: '10px', flexWrap: 'wrap',
-            }}>
+            <div className="flex items-center gap-2 text-[11.5px] text-[#a0693a] font-['DM_Sans',sans-serif] font-semibold tracking-[0.04em] uppercase mb-2.5 flex-wrap">
               {categoryName}
-              <span style={{ color: '#c4a882' }}>›</span>
-              <span style={{ color: '#9a7a5a', fontWeight: '400', textTransform: 'none', letterSpacing: 0 }}>
+              <span className="text-[#c4a882]">›</span>
+              <span className="text-[#9a7a5a] font-normal normal-case tracking-normal">
                 {selectedFormat} Edition
               </span>
             </div>
 
-            <h1 style={{
-              fontFamily: "'Playfair Display',serif",
-              fontSize: 'clamp(26px,3.5vw,38px)',
-              fontWeight: '700', color: '#3d2010',
-              lineHeight: 1.2, marginBottom: '6px',
-            }}>
+            <h1 className="font-['Playfair_Display',serif] text-[clamp(26px,3.5vw,38px)] font-bold text-[#3d2010] leading-[1.2] mb-1.5">
               {book.title}
             </h1>
 
-            <p style={{
-              fontSize: '15px', color: '#9a7a5a',
-              fontFamily: "'DM Sans',sans-serif",
-              fontStyle: 'italic', marginBottom: '14px',
-            }}>
-              by <span style={{ color: '#a0693a' }}>{book.author}</span>
+            <p className="text-[15px] text-[#9a7a5a] font-['DM_Sans',sans-serif] italic mb-3.5">
+              by <span className="text-[#a0693a] not-italic">{book.author}</span>
             </p>
 
             {/* Rating */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
+            <div className="flex items-center gap-3 mb-5 flex-wrap">
               <StarRating rating={book.rating} size="md" showCount={false} />
-              <span style={{ fontSize: '13px', color: '#a0693a', fontFamily: "'DM Sans',sans-serif", fontWeight: '600' }}>
+              <span className="text-[13px] text-[#a0693a] font-['DM_Sans',sans-serif] font-semibold">
                 {book.rating}
               </span>
-              <span style={{
-                fontSize: '12.5px', color: '#9a7a5a',
-                fontFamily: "'DM Sans',sans-serif",
-              }}>
+              <span className="text-[12.5px] text-[#9a7a5a] font-['DM_Sans',sans-serif]">
                 ({formatReviewCount(book.reviewCount)})
               </span>
             </div>
 
             {/* Price */}
-            <div style={{
-              display: 'flex', alignItems: 'baseline', gap: '12px',
-              marginBottom: '24px', flexWrap: 'wrap',
-            }}>
-              <span style={{
-                fontFamily: "'Playfair Display',serif",
-                fontSize: '32px', fontWeight: '700', color: '#3d2010',
-              }}>
+            <div className="flex items-baseline gap-3 mb-6 flex-wrap">
+              <span className="font-['Playfair_Display',serif] text-[32px] font-bold text-[#3d2010]">
                 {formatPrice(finalPrice)}
               </span>
               {book.salePrice && (
                 <>
-                  <span style={{
-                    fontSize: '16px', color: '#b8998a',
-                    fontFamily: "'DM Sans',sans-serif",
-                    textDecoration: 'line-through',
-                  }}>
+                  <span className="text-base text-[#b8998a] font-['DM_Sans',sans-serif] line-through">
                     {formatPrice(originalPrice)}
                   </span>
-                  <span style={{
-                    fontSize: '12px', fontWeight: '700', color: '#2d7a45',
-                    fontFamily: "'DM Sans',sans-serif",
-                    background: 'rgba(60,140,80,0.10)',
-                    padding: '3px 9px', borderRadius: '10px',
-                  }}>
+                  <span className="text-xs font-bold text-[#2d7a45] font-['DM_Sans',sans-serif] bg-[rgba(60,140,80,0.10)] py-[3px] px-[9px] rounded-[10px]">
                     Save {savePercent}%
                   </span>
                 </>
@@ -580,30 +479,23 @@ export default function BookDetailPage() {
 
             {/* Format selector */}
             {book.formats && book.formats.length > 0 && (
-              <div style={{ marginBottom: '24px' }}>
-                <div style={{
-                  fontSize: '11px', fontWeight: '600', color: '#5c3d1e',
-                  textTransform: 'uppercase', letterSpacing: '0.07em',
-                  fontFamily: "'DM Sans',sans-serif", marginBottom: '10px',
-                }}>
+              <div className="mb-6">
+                <div className="text-[11px] font-semibold text-[#5c3d1e] uppercase tracking-[0.07em] font-['DM_Sans',sans-serif] mb-2.5">
                   Select Format
                 </div>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <div className="flex gap-2 flex-wrap">
                   {book.formats.map(fmt => (
                     <button
                       key={fmt}
                       onClick={() => setSelectedFormat(fmt)}
-                      style={{
-                        padding: '8px 16px', borderRadius: '20px',
-                        border: `1.5px solid ${selectedFormat === fmt ? '#a0693a' : 'rgba(180,140,90,0.3)'}`,
-                        background: selectedFormat === fmt
-                          ? 'rgba(160,105,58,0.14)'
-                          : 'rgba(255,255,255,0.6)',
-                        color: selectedFormat === fmt ? '#5c3520' : '#7a5c3a',
-                        fontSize: '12.5px', fontWeight: selectedFormat === fmt ? '600' : '400',
-                        fontFamily: "'DM Sans',sans-serif",
-                        cursor: 'pointer', transition: 'all 0.2s',
-                      }}
+                      className={`
+                        px-4 py-2 rounded-[20px] border-[1.5px] text-[12.5px] font-['DM_Sans',sans-serif]
+                        transition-all duration-200 cursor-pointer
+                        ${selectedFormat === fmt 
+                          ? 'border-[#a0693a] bg-[rgba(160,105,58,0.14)] text-[#5c3520] font-semibold' 
+                          : 'border-[rgba(180,140,90,0.3)] bg-[rgba(255,255,255,0.6)] text-[#7a5c3a] font-normal hover:bg-[rgba(255,255,255,0.8)]'
+                        }
+                      `}
                     >
                       {fmt}
                     </button>
@@ -613,48 +505,23 @@ export default function BookDetailPage() {
             )}
 
             {/* Quantity */}
-            <div style={{ marginBottom: '24px' }}>
-              <div style={{
-                fontSize: '11px', fontWeight: '600', color: '#5c3d1e',
-                textTransform: 'uppercase', letterSpacing: '0.07em',
-                fontFamily: "'DM Sans',sans-serif", marginBottom: '10px',
-              }}>
+            <div className="mb-6">
+              <div className="text-[11px] font-semibold text-[#5c3d1e] uppercase tracking-[0.07em] font-['DM_Sans',sans-serif] mb-2.5">
                 Quantity
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
+              <div className="flex items-center gap-0">
                 <button
                   onClick={() => setQty(q => Math.max(1, q - 1))}
-                  style={{
-                    width: '38px', height: '38px',
-                    background: 'rgba(255,255,255,0.6)',
-                    border: '1px solid rgba(180,140,90,0.3)', borderRight: 'none',
-                    borderRadius: '10px 0 0 10px',
-                    cursor: 'pointer', fontSize: '16px', color: '#7a4e22',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
+                  className="w-[38px] h-[38px] bg-[rgba(255,255,255,0.6)] border border-[rgba(180,140,90,0.3)] border-r-0 rounded-l-[10px] cursor-pointer text-base text-[#7a4e22] flex items-center justify-center transition-all duration-200 hover:bg-[rgba(255,255,255,0.8)]"
                 >
                   −
                 </button>
-                <div style={{
-                  width: '48px', height: '38px',
-                  background: 'rgba(255,255,255,0.7)',
-                  border: '1px solid rgba(180,140,90,0.3)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '14px', fontWeight: '600', color: '#3d2010',
-                  fontFamily: "'DM Sans',sans-serif",
-                }}>
+                <div className="w-12 h-[38px] bg-[rgba(255,255,255,0.7)] border border-[rgba(180,140,90,0.3)] flex items-center justify-center text-[14px] font-semibold text-[#3d2010] font-['DM_Sans',sans-serif]">
                   {qty}
                 </div>
                 <button
                   onClick={() => setQty(q => q + 1)}
-                  style={{
-                    width: '38px', height: '38px',
-                    background: 'rgba(255,255,255,0.6)',
-                    border: '1px solid rgba(180,140,90,0.3)', borderLeft: 'none',
-                    borderRadius: '0 10px 10px 0',
-                    cursor: 'pointer', fontSize: '16px', color: '#7a4e22',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
+                  className="w-[38px] h-[38px] bg-[rgba(255,255,255,0.6)] border border-[rgba(180,140,90,0.3)] border-l-0 rounded-r-[10px] cursor-pointer text-base text-[#7a4e22] flex items-center justify-center transition-all duration-200 hover:bg-[rgba(255,255,255,0.8)]"
                 >
                   +
                 </button>
@@ -662,23 +529,17 @@ export default function BookDetailPage() {
             </div>
 
             {/* CTAs */}
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
+            <div className="flex gap-3 mb-5 flex-wrap">
               <button
                 onClick={handleAddToCart}
-                style={{
-                  flex: 1, minWidth: '180px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                  background: added
-                    ? 'rgba(60,140,80,0.15)'
-                    : 'linear-gradient(135deg, #c48b52, #a0693a)',
-                  border: added ? '1.5px solid rgba(60,140,80,0.35)' : 'none',
-                  color: added ? '#2d7a45' : '#fff',
-                  padding: '14px 28px', borderRadius: '28px',
-                  fontSize: '14px', fontWeight: '600',
-                  fontFamily: "'DM Sans',sans-serif",
-                  cursor: 'pointer', transition: 'all 0.25s ease',
-                  boxShadow: added ? 'none' : '0 6px 24px rgba(160,105,58,0.35)',
-                }}
+                className={`
+                  flex-1 min-w-[180px] flex items-center justify-center gap-2 py-[14px] px-7 rounded-[28px]
+                  text-[14px] font-semibold font-['DM_Sans',sans-serif] cursor-pointer transition-all duration-250
+                  ${added 
+                    ? 'bg-[rgba(60,140,80,0.15)] border-[1.5px] border-[rgba(60,140,80,0.35)] text-[#2d7a45] shadow-none' 
+                    : 'bg-gradient-to-br from-[#c48b52] to-[#a0693a] text-white shadow-[0_6px_24px_rgba(160,105,58,0.35)] hover:shadow-[0_8px_28px_rgba(160,105,58,0.4)] hover:-translate-y-px'
+                  }
+                `}
               >
                 {added ? (
                   <><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#2d7a45" strokeWidth="1.4"/><path d="M5 8l2.5 2.5 4-4" stroke="#2d7a45" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg> Added to Basket!</>
@@ -689,13 +550,14 @@ export default function BookDetailPage() {
 
               <button
                 onClick={() => toggleWishlist(book)}
-                style={{
-                  width: '48px', height: '48px', borderRadius: '50%',
-                  background: wishlisted ? 'rgba(160,105,58,0.15)' : 'rgba(255,255,255,0.7)',
-                  border: `1.5px solid ${wishlisted ? '#a0693a' : 'rgba(180,140,90,0.35)'}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', transition: 'all 0.2s',
-                }}
+                className={`
+                  w-12 h-12 rounded-full flex items-center justify-center cursor-pointer
+                  transition-all duration-200 border-[1.5px] hover:scale-105
+                  ${wishlisted 
+                    ? 'bg-[rgba(160,105,58,0.15)] border-[#a0693a]' 
+                    : 'bg-[rgba(255,255,255,0.7)] border-[rgba(180,140,90,0.35)] hover:bg-[rgba(255,255,255,0.9)]'
+                  }
+                `}
               >
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                   <path
@@ -708,20 +570,16 @@ export default function BookDetailPage() {
             </div>
 
             {/* Trust badges */}
-            <div style={{
-              display: 'flex', gap: '20px', flexWrap: 'wrap',
-              padding: '14px 0',
-              borderTop: '1px solid rgba(180,140,90,0.18)',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '12px', color: '#7a5c3a', fontFamily: "'DM Sans',sans-serif" }}>
-                <span style={{ fontSize: '14px' }}>🚚</span> Ships in 24 hours
+            <div className="flex gap-5 flex-wrap pt-3.5 border-t border-[rgba(180,140,90,0.18)]">
+              <div className="flex items-center gap-1.5 text-xs text-[#7a5c3a] font-['DM_Sans',sans-serif]">
+                <span className="text-sm">🚚</span> Ships in 24 hours
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '12px', color: '#7a5c3a', fontFamily: "'DM Sans',sans-serif" }}>
-                <span style={{ fontSize: '14px' }}>📖</span> Free chapter preview
+              <div className="flex items-center gap-1.5 text-xs text-[#7a5c3a] font-['DM_Sans',sans-serif]">
+                <span className="text-sm">📖</span> Free chapter preview
               </div>
               {book.ageRange && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '12px', color: '#7a5c3a', fontFamily: "'DM Sans',sans-serif" }}>
-                  <span style={{ fontSize: '14px' }}>🎯</span> Ages {book.ageRange}
+                <div className="flex items-center gap-1.5 text-xs text-[#7a5c3a] font-['DM_Sans',sans-serif]">
+                  <span className="text-sm">🎯</span> Ages {book.ageRange}
                 </div>
               )}
             </div>
@@ -729,24 +587,20 @@ export default function BookDetailPage() {
         </div>
 
         {/* ── Tabs ── */}
-        <div style={{ marginBottom: '64px' }} id="reviews">
-          <div style={{
-            display: 'flex', borderBottom: '1px solid rgba(180,140,90,0.2)',
-            marginBottom: '28px', gap: '0', flexWrap: 'wrap',
-          }}>
+        <div className="mb-16" id="reviews">
+          <div className="flex border-b border-[rgba(180,140,90,0.2)] mb-7 gap-0 flex-wrap">
             {['description', 'details', 'reviews'].map(t => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                style={{
-                  padding: '12px 24px', background: 'none', border: 'none',
-                  borderBottom: `2px solid ${tab === t ? '#a0693a' : 'transparent'}`,
-                  color: tab === t ? '#a0693a' : '#9a7a5a',
-                  fontSize: '13.5px', fontWeight: tab === t ? '600' : '400',
-                  fontFamily: "'DM Sans',sans-serif",
-                  cursor: 'pointer', transition: 'all 0.2s',
-                  textTransform: 'capitalize', marginBottom: '-1px',
-                }}
+                className={`
+                  py-3 px-6 bg-none border-none border-b-2 text-[13.5px] font-['DM_Sans',sans-serif]
+                  cursor-pointer transition-all duration-200 capitalize mb-px
+                  ${tab === t 
+                    ? 'border-[#a0693a] text-[#a0693a] font-semibold' 
+                    : 'border-transparent text-[#9a7a5a] font-normal hover:text-[#a0693a]'
+                  }
+                `}
               >
                 {t} {t === 'reviews' ? `(${book.reviewCount.toLocaleString()})` : ''}
               </button>
@@ -754,21 +608,15 @@ export default function BookDetailPage() {
           </div>
 
           {tab === 'description' && (
-            <div style={{ maxWidth: '720px' }}>
+            <div className="max-w-[720px]">
               {book.description ? (
                 book.description.split('\n\n').map((para, i) => (
-                  <p key={i} style={{
-                    fontSize: '14px', color: '#5c3d1e', lineHeight: 1.8,
-                    fontFamily: "'DM Sans',sans-serif", marginBottom: '16px',
-                  }}>
+                  <p key={i} className="text-[14px] text-[#5c3d1e] leading-[1.8] font-['DM_Sans',sans-serif] mb-4">
                     {para}
                   </p>
                 ))
               ) : (
-                <p style={{
-                  fontSize: '14px', color: '#5c3d1e', lineHeight: 1.8,
-                  fontFamily: "'DM Sans',sans-serif",
-                }}>
+                <p className="text-[14px] text-[#5c3d1e] leading-[1.8] font-['DM_Sans',sans-serif]">
                   No description available for this book.
                 </p>
               )}
@@ -776,10 +624,7 @@ export default function BookDetailPage() {
           )}
 
           {tab === 'details' && (
-            <div style={{
-              display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '12px', maxWidth: '720px',
-            }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-[720px]">
               {[
                 ['ISBN', book.isbn],
                 ['Pages', book.pageCount],
@@ -789,16 +634,11 @@ export default function BookDetailPage() {
                 ['Age Range', book.ageRange],
                 ['Categories', book.categories?.join(', ')],
               ].filter(([_, value]) => value).map(([label, value]) => (
-                <div key={label} style={{
-                  background: 'rgba(255,255,255,0.52)',
-                  border: '1px solid rgba(200,170,130,0.25)',
-                  borderRadius: '12px', padding: '12px 16px',
-                  backdropFilter: 'blur(10px)',
-                }}>
-                  <div style={{ fontSize: '10px', color: '#9a7a5a', fontFamily: "'DM Sans',sans-serif", fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>
+                <div key={label} className="bg-[rgba(255,255,255,0.52)] border border-[rgba(200,170,130,0.25)] rounded-xl p-3 backdrop-blur-sm transition-all duration-200 hover:shadow-sm">
+                  <div className="text-[10px] text-[#9a7a5a] font-['DM_Sans',sans-serif] font-semibold uppercase tracking-[0.06em] mb-1">
                     {label}
                   </div>
-                  <div style={{ fontSize: '13.5px', color: '#3d2010', fontFamily: "'DM Sans',sans-serif", fontWeight: '500' }}>
+                  <div className="text-[13.5px] text-[#3d2010] font-['DM_Sans',sans-serif] font-medium">
                     {value}
                   </div>
                 </div>
@@ -807,40 +647,32 @@ export default function BookDetailPage() {
           )}
 
           {tab === 'reviews' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '40px', alignItems: 'start' }}
-              className="reviews-grid"
-            >
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-10 items-start">
               {/* Rating breakdown */}
-              <div style={{
-                background: 'rgba(255,255,255,0.52)',
-                border: '1px solid rgba(200,170,130,0.28)',
-                borderRadius: '20px', padding: '24px',
-                backdropFilter: 'blur(12px)',
-                position: 'sticky', top: '84px',
-              }}>
-                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                  <div style={{ fontFamily: "'Playfair Display',serif", fontSize: '52px', fontWeight: '700', color: '#3d2010', lineHeight: 1 }}>
+              <div className="bg-[rgba(255,255,255,0.52)] border border-[rgba(200,170,130,0.28)] rounded-[20px] p-6 backdrop-blur-sm sticky top-[84px]">
+                <div className="text-center mb-5">
+                  <div className="font-['Playfair_Display',serif] text-[52px] font-bold text-[#3d2010] leading-none">
                     {book.rating}
                   </div>
                   <StarRating rating={book.rating} size="lg" showCount={false} />
-                  <div style={{ fontSize: '12px', color: '#9a7a5a', fontFamily: "'DM Sans',sans-serif", marginTop: '6px' }}>
+                  <div className="text-xs text-[#9a7a5a] font-['DM_Sans',sans-serif] mt-1.5">
                     {formatReviewCount(book.reviewCount)}
                   </div>
                 </div>
                 {ratingBreakdown.map(({ stars, pct }) => (
-                  <div key={stars} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '11px', color: '#7a5c3a', fontFamily: "'DM Sans',sans-serif", width: '10px' }}>{stars}</span>
-                    <span style={{ fontSize: '11px', color: '#a0693a' }}>★</span>
-                    <div style={{ flex: 1, height: '6px', background: 'rgba(160,105,58,0.12)', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{ width: `${pct}%`, height: '100%', background: '#a0693a', borderRadius: '3px', transition: 'width 0.6s ease' }}/>
+                  <div key={stars} className="flex items-center gap-2.5 mb-2">
+                    <span className="text-[11px] text-[#7a5c3a] font-['DM_Sans',sans-serif] w-[10px]">{stars}</span>
+                    <span className="text-[11px] text-[#a0693a]">★</span>
+                    <div className="flex-1 h-1.5 bg-[rgba(160,105,58,0.12)] rounded-full overflow-hidden">
+                      <div className="h-full bg-[#a0693a] rounded-full transition-width duration-600" style={{ width: `${pct}%` }} />
                     </div>
-                    <span style={{ fontSize: '11px', color: '#9a7a5a', fontFamily: "'DM Sans',sans-serif", width: '28px', textAlign: 'right' }}>{pct}%</span>
+                    <span className="text-[11px] text-[#9a7a5a] font-['DM_Sans',sans-serif] w-[28px] text-right">{pct}%</span>
                   </div>
                 ))}
               </div>
 
               {/* Review cards */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className="flex flex-col gap-3.5">
                 {reviews.map(r => <ReviewCard key={r.id} review={r} />)}
               </div>
             </div>
@@ -848,22 +680,15 @@ export default function BookDetailPage() {
         </div>
 
         {/* Related books */}
-        <div style={{ borderTop: '1px solid rgba(180,140,90,0.18)', paddingTop: '48px' }}>
-          <div style={{ marginBottom: '4px' }}>
-            <div style={{ fontSize: '11px', color: '#a0693a', fontWeight: '700', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: "'DM Sans',sans-serif", marginBottom: '4px' }}>
+        <div className="border-t border-[rgba(180,140,90,0.18)] pt-12">
+          <div className="mb-1">
+            <div className="text-[11px] text-[#a0693a] font-bold tracking-[0.08em] uppercase font-['DM_Sans',sans-serif] mb-1">
               CURATED FOR YOU
             </div>
           </div>
-          <FeaturedCarousel title="Readers Also Loved" viewAllHref="/sh" />
+          <FeaturedCarousel title="Readers Also Loved" viewAllHref="/books" />
         </div>
       </div>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .detail-grid   { grid-template-columns: 1fr !important; gap: 32px !important }
-          .reviews-grid  { grid-template-columns: 1fr !important }
-        }
-      `}</style>
     </div>
   )
 }
