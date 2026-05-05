@@ -7,6 +7,7 @@ import CollectionPage from './pages/CollectionPage'
 import BookDetailPage from './pages/BookDetailPage'
 import CartPage from './pages/CartPage'
 import ContactUs from './pages/ContactUs'
+import WishlistPage from './pages/WishlistPage'
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/category/:slug"    element={<CollectionPage />} />
           <Route path="/book/:slug"        element={<BookDetailPage />} />
           <Route path="/cart"              element={<CartPage />} />
+          <Route path="/wishlist"          element={<WishlistPage />} />
           <Route path="/contact"             element={<ContactUs />} />
         </Routes>
         <Footer />

@@ -1,0 +1,13 @@
+services:
+  - type: static
+    name: kiddle-bookshop
+    repo: https://github.com/Ghost214-hue/kiddle_cms
+    buildCommand: npm run build
+    publishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
