@@ -380,7 +380,7 @@ export default function BookDetailPage() {
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>📖</div>
           <h2 style={{ fontFamily: "'Playfair Display',serif", color: '#3d2010' }}>Book not found</h2>
-          <Link to="/shop" style={{ color: '#a0693a', textDecoration: 'none', marginTop: '16px', display: 'inline-block' }}>
+          <Link to="/books" style={{ color: '#a0693a', textDecoration: 'none', marginTop: '16px', display: 'inline-block' }}>
             ← Back to Shop
           </Link>
         </div>
@@ -442,7 +442,7 @@ export default function BookDetailPage() {
         }}>
           <Link to="/" style={{ color: '#9a7a5a', textDecoration: 'none' }}>Home</Link>
           <span style={{ color: '#c4a882' }}>›</span>
-          <Link to="/shop" style={{ color: '#9a7a5a', textDecoration: 'none' }}>Shop</Link>
+          <Link to="/books" style={{ color: '#9a7a5a', textDecoration: 'none' }}>Books</Link>
           <span style={{ color: '#c4a882' }}>›</span>
           <span style={{ color: '#c4a882' }}>›</span>
           <span style={{ color: '#5c3d1e', fontWeight: '500' }}>{book.title}</span>
@@ -854,7 +854,7 @@ export default function BookDetailPage() {
               CURATED FOR YOU
             </div>
           </div>
-          <FeaturedCarousel title="Readers Also Loved" viewAllHref="/shop" />
+          <FeaturedCarousel title="Readers Also Loved" viewAllHref="/sh" />
         </div>
       </div>
 

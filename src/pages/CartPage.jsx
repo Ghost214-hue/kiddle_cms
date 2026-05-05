@@ -32,111 +32,141 @@ function CartItem({ item, onUpdateQty, onRemove }) {
   const [removing, setRemoving] = useState(false)
   const [imgErr, setImgErr] = useState(false)
   const price = (item.salePrice ?? item.price) * item.qty
+  const coverColor = getCoverColor(item)
 
   function handleRemove() {
     setRemoving(true)
     setTimeout(() => onRemove(item._id, item.format), 350)
   }
 
-  const coverColor = getCoverColor(item)
-
   return (
     <div className={`
-      flex flex-col gap-3 p-4
+      flex flex-col sm:flex-row sm:items-start gap-4 p-4
       bg-white/60 backdrop-blur-sm
       border border-[rgba(200,170,130,0.28)] rounded-xl
       transition-all duration-350
       ${removing ? 'opacity-0 translate-x-5' : 'opacity-100 translate-x-0'}
     `}>
-      {/* Top row: Cover + Info */}
-      <div className="flex gap-3 items-start">
-        {/* Cover */}
-        <Link to={`/book/${item.slug}`} className="flex-shrink-0">
-          <div 
-            className="w-[70px] h-[100px] rounded-lg relative overflow-hidden shadow-md"
-            style={{
-              background: `linear-gradient(145deg, ${coverColor}, ${coverColor}80)`,
-            }}
-          >
-            <div className="absolute left-0 top-0 bottom-0 w-2 bg-black/15 rounded-l-lg" />
-            {!imgErr && item.img ? (
-              <img 
-                src={item.img} 
-                alt={item.title} 
-                onError={() => setImgErr(true)}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="opacity-60 mx-auto mt-8">
+      {/* Cover */}
+      <Link to={`/book/${item.slug}`} className="flex-shrink-0 self-center sm:self-start">
+        <div 
+          className="w-[80px] h-[110px] rounded-lg relative overflow-hidden shadow-md"
+          style={{
+            background: `linear-gradient(145deg, ${coverColor}, ${coverColor}80)`,
+          }}
+        >
+          <div className="absolute left-0 top-0 bottom-0 w-2 bg-black/15 rounded-l-lg" />
+          {!imgErr && item.img ? (
+            <img 
+              src={item.img} 
+              alt={item.title} 
+              onError={() => setImgErr(true)}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="opacity-60">
                 <path d="M4 19V5a2 2 0 012-2h13a1 1 0 011 1v13" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" strokeLinecap="round"/>
                 <path d="M4 19a2 2 0 002 2h14" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
-            )}
-          </div>
+            </div>
+          )}
+        </div>
+      </Link>
+
+      {/* Info Section */}
+      <div className="flex-1 min-w-0">
+        <Link to={`/book/${item.slug}`} className="no-underline">
+          <h3 className="font-['Playfair_Display',serif] text-[15px] font-semibold text-[#3d2010] mb-1 leading-tight line-clamp-2">
+            {item.title}
+          </h3>
         </Link>
-
-        {/* Info */}
-        <div className="flex-1 min-w-0">
-          <Link to={`/book/${item.slug}`} className="no-underline">
-            <h3 className="font-playfair text-[15px] font-semibold text-[#3d2010] mb-1 leading-tight line-clamp-2">
-              {item.title}
-            </h3>
-          </Link>
-          <p className="text-xs text-[#9a7a5a] font-dm-sans mb-2">
-            by {item.author}
-          </p>
-          <div className="inline-flex items-center gap-1.5 bg-[rgba(160,105,58,0.09)] rounded-lg px-2.5 py-0.5">
-            <span className="text-[11px] text-[#9a6030] font-dm-sans font-medium">
-              {item.format || 'Print'}
-            </span>
-            {item.ageRange && (
-              <>
-                <span className="text-[#c4a882]">•</span>
-                <span className="text-[11px] text-[#9a6030] font-dm-sans font-medium">
-                  {item.ageRange}
-                </span>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom row: Price + Quantity + Remove */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        {/* Price */}
-        <div className="text-[17px] font-bold text-[#7a4e22] font-dm-sans">
-          {formatPrice(price)}
+        <p className="text-xs text-[#9a7a5a] font-['DM_Sans',sans-serif] mb-2">
+          by {item.author}
+        </p>
+        <div className="inline-flex items-center gap-1.5 bg-[rgba(160,105,58,0.09)] rounded-lg px-2.5 py-0.5 mb-3">
+          <span className="text-[11px] text-[#9a6030] font-['DM_Sans',sans-serif] font-medium">
+            {item.format || 'Print'}
+          </span>
+          {item.ageRange && (
+            <>
+              <span className="text-[#c4a882]">•</span>
+              <span className="text-[11px] text-[#9a6030] font-['DM_Sans',sans-serif] font-medium">
+                {item.ageRange}
+              </span>
+            </>
+          )}
         </div>
 
-        {/* Quantity controls */}
-        <div className="flex items-center">
-          <button
-            onClick={() => onUpdateQty(item._id, item.format, item.qty - 1)}
-            className="w-[34px] h-[34px] bg-white/60 border border-[rgba(180,140,90,0.28)] border-r-0 rounded-l-lg cursor-pointer text-lg text-[#7a4e22] flex items-center justify-center hover:bg-white/80 transition"
-          >
-            −
-          </button>
-          <div className="w-11 h-[34px] bg-white/70 border border-[rgba(180,140,90,0.28)] flex items-center justify-center text-sm font-semibold text-[#3d2010] font-dm-sans">
-            {item.qty}
+        {/* Price and Actions - Mobile Layout */}
+        <div className="flex flex-col sm:hidden gap-3">
+          <div className="flex items-center justify-between">
+            <div className="text-[17px] font-bold text-[#7a4e22] font-['DM_Sans',sans-serif]">
+              {formatPrice(price)}
+            </div>
+            <div className="flex items-center">
+              <button
+                onClick={() => onUpdateQty(item._id, item.format, item.qty - 1)}
+                className="w-[34px] h-[34px] bg-white/60 border border-[rgba(180,140,90,0.28)] border-r-0 rounded-l-lg cursor-pointer text-lg text-[#7a4e22] flex items-center justify-center hover:bg-white/80 transition"
+              >
+                −
+              </button>
+              <div className="w-11 h-[34px] bg-white/70 border border-[rgba(180,140,90,0.28)] flex items-center justify-center text-sm font-semibold text-[#3d2010] font-['DM_Sans',sans-serif]">
+                {item.qty}
+              </div>
+              <button
+                onClick={() => onUpdateQty(item._id, item.format, item.qty + 1)}
+                className="w-[34px] h-[34px] bg-white/60 border border-[rgba(180,140,90,0.28)] border-l-0 rounded-r-lg cursor-pointer text-lg text-[#7a4e22] flex items-center justify-center hover:bg-white/80 transition"
+              >
+                +
+              </button>
+            </div>
           </div>
           <button
-            onClick={() => onUpdateQty(item._id, item.format, item.qty + 1)}
-            className="w-[34px] h-[34px] bg-white/60 border border-[rgba(180,140,90,0.28)] border-l-0 rounded-r-lg cursor-pointer text-lg text-[#7a4e22] flex items-center justify-center hover:bg-white/80 transition"
+            onClick={handleRemove}
+            className="w-full bg-none border border-[rgba(180,140,90,0.28)] cursor-pointer text-[#c4a882] py-2.5 flex items-center justify-center gap-1.5 text-xs font-['DM_Sans',sans-serif] transition-colors hover:text-[#b43c1e] hover:border-[rgba(180,100,60,0.4)] rounded-lg"
           >
-            +
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M2 3.5h10M5.5 3.5V2.5a1 1 0 011-1h1a1 1 0 011 1v1M6 6v4M8 6v4M3 3.5l.7 7.5a1 1 0 001 .9h4.6a1 1 0 001-.9l.7-7.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span>Remove</span>
           </button>
         </div>
 
-        {/* Remove button */}
-        <button
-          onClick={handleRemove}
-          className="bg-none border-none cursor-pointer text-[#c4a882] px-3 py-1.5 flex items-center gap-1.5 text-xs font-dm-sans transition-colors hover:text-[#b43c1e] rounded-lg"
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M2 3.5h10M5.5 3.5V2.5a1 1 0 011-1h1a1 1 0 011 1v1M6 6v4M8 6v4M3 3.5l.7 7.5a1 1 0 001 .9h4.6a1 1 0 001-.9l.7-7.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <span>Remove</span>
-        </button>
+        {/* Price and Actions - Desktop Layout */}
+        <div className="hidden sm:flex items-center justify-between gap-3 flex-wrap">
+          <div className="text-[17px] font-bold text-[#7a4e22] font-['DM_Sans',sans-serif]">
+            {formatPrice(price)}
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center">
+              <button
+                onClick={() => onUpdateQty(item._id, item.format, item.qty - 1)}
+                className="w-[34px] h-[34px] bg-white/60 border border-[rgba(180,140,90,0.28)] border-r-0 rounded-l-lg cursor-pointer text-lg text-[#7a4e22] flex items-center justify-center hover:bg-white/80 transition"
+              >
+                −
+              </button>
+              <div className="w-11 h-[34px] bg-white/70 border border-[rgba(180,140,90,0.28)] flex items-center justify-center text-sm font-semibold text-[#3d2010] font-['DM_Sans',sans-serif]">
+                {item.qty}
+              </div>
+              <button
+                onClick={() => onUpdateQty(item._id, item.format, item.qty + 1)}
+                className="w-[34px] h-[34px] bg-white/60 border border-[rgba(180,140,90,0.28)] border-l-0 rounded-r-lg cursor-pointer text-lg text-[#7a4e22] flex items-center justify-center hover:bg-white/80 transition"
+              >
+                +
+              </button>
+            </div>
+            <button
+              onClick={handleRemove}
+              className="bg-none border-none cursor-pointer text-[#c4a882] px-3 py-1.5 flex items-center gap-1.5 text-xs font-['DM_Sans',sans-serif] transition-colors hover:text-[#b43c1e] rounded-lg"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M2 3.5h10M5.5 3.5V2.5a1 1 0 011-1h1a1 1 0 011 1v1M6 6v4M8 6v4M3 3.5l.7 7.5a1 1 0 001 .9h4.6a1 1 0 001-.9l.7-7.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span>Remove</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -183,7 +213,6 @@ export default function CartPage() {
   const [promoCode, setPromoCode] = useState('')
   const [promoInput, setPromoInput] = useState('')
   const [promoError, setPromoError] = useState('')
-  const [payMethod, setPayMethod] = useState('CARD')
   const [ordered, setOrdered] = useState(false)
   const [ordering, setOrdering] = useState(false)
   const [totals, setTotals] = useState({
@@ -243,13 +272,13 @@ export default function CartPage() {
       <div className="bg-[#f5f0e8] min-h-screen pt-[68px] flex items-center justify-center p-5">
         <div className="text-center max-w-[90%] w-[400px] p-8 bg-white/60 border border-[rgba(200,170,130,0.28)] rounded-3xl backdrop-blur-md">
           <div className="text-5xl mb-4">📦</div>
-          <h2 className="font-playfair text-2xl text-[#3d2010] mb-2.5">Order Placed!</h2>
-          <p className="text-[13.5px] text-[#7a5c3a] font-dm-sans leading-relaxed mb-6">
+          <h2 className="font-['Playfair_Display',serif] text-2xl text-[#3d2010] mb-2.5">Order Placed!</h2>
+          <p className="text-[13.5px] text-[#7a5c3a] font-['DM_Sans',sans-serif] leading-relaxed mb-6">
             Your books are on their way. We'll send a confirmation to your email shortly.
           </p>
           <button
             onClick={() => navigate('/books')}
-            className="inline-flex items-center gap-2 bg-[#a0693a] text-white px-7 py-3 rounded-2xl text-[13px] font-semibold font-dm-sans border-none cursor-pointer hover:bg-[#8a5830] transition"
+            className="inline-flex items-center gap-2 bg-[#a0693a] text-white px-7 py-3 rounded-2xl text-[13px] font-semibold font-['DM_Sans',sans-serif] border-none cursor-pointer hover:bg-[#8a5830] transition"
           >
             Continue Shopping →
           </button>
@@ -265,7 +294,7 @@ export default function CartPage() {
         {/* Back button */}
         <button
           onClick={() => navigate(-1)}
-          className="back-button inline-flex items-center gap-1.5 bg-none border-none cursor-pointer text-sm text-[#a0693a] font-medium font-dm-sans py-2 mb-5 lg:mb-8 hover:text-[#8a5830] transition"
+          className="back-button inline-flex items-center gap-1.5 bg-none border-none cursor-pointer text-sm text-[#a0693a] font-medium font-['DM_Sans',sans-serif] py-2 mb-5 lg:mb-8 hover:text-[#8a5830] transition"
         >
           <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
             <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -275,10 +304,10 @@ export default function CartPage() {
 
         {/* Header */}
         <div className="cart-header mb-6 lg:mb-8">
-          <h1 className="font-playfair text-[28px] font-bold text-[#3d2010] mb-2">
+          <h1 className="font-['Playfair_Display',serif] text-[28px] font-bold text-[#3d2010] mb-2">
             Your Reading List
           </h1>
-          <p className="text-[13px] text-[#9a7a5a] font-dm-sans">
+          <p className="text-[13px] text-[#9a7a5a] font-['DM_Sans',sans-serif]">
             {items.length === 0
               ? 'Your cart is empty.'
               : `${totals.itemCount} item${totals.itemCount !== 1 ? 's' : ''} ready for checkout`}
@@ -288,11 +317,11 @@ export default function CartPage() {
         {items.length === 0 ? (
           <div className="empty-cart text-center py-[60px] px-5 bg-white/60 border border-[rgba(200,170,130,0.25)] rounded-2xl">
             <div className="text-5xl mb-4">📚</div>
-            <h3 className="font-playfair text-xl text-[#3d2010] mb-2">Your list is empty</h3>
+            <h3 className="font-['Playfair_Display',serif] text-xl text-[#3d2010] mb-2">Your list is empty</h3>
             <p className="text-[13px] text-[#9a7a5a] mb-6">Discover books that will spark your imagination.</p>
             <button
               onClick={() => navigate('/books')}
-              className="inline-flex gap-2 items-center bg-[#a0693a] text-white px-7 py-3 rounded-2xl text-[13px] font-semibold font-dm-sans border-none cursor-pointer hover:bg-[#8a5830] transition"
+              className="inline-flex gap-2 items-center bg-[#a0693a] text-white px-7 py-3 rounded-2xl text-[13px] font-semibold font-['DM_Sans',sans-serif] border-none cursor-pointer hover:bg-[#8a5830] transition"
             >
               Discover Books →
             </button>
@@ -322,11 +351,11 @@ export default function CartPage() {
                       value={promoInput}
                       onChange={e => setPromoInput(e.target.value)}
                       placeholder="Discount Code"
-                      className="flex-1 p-3 text-sm bg-white/70 border border-[rgba(180,140,90,0.28)] rounded-xl outline-none font-dm-sans"
+                      className="flex-1 p-3 text-sm bg-white/70 border border-[rgba(180,140,90,0.28)] rounded-xl outline-none font-['DM_Sans',sans-serif]"
                     />
                     <button
                       onClick={applyPromo}
-                      className="px-5 py-3 bg-[#a0693a] text-white border-none rounded-xl cursor-pointer text-[13px] font-semibold font-dm-sans hover:bg-[#8a5830] transition"
+                      className="px-5 py-3 bg-[#a0693a] text-white border-none rounded-xl cursor-pointer text-[13px] font-semibold font-['DM_Sans',sans-serif] hover:bg-[#8a5830] transition"
                     >
                       Apply
                     </button>
@@ -349,7 +378,7 @@ export default function CartPage() {
               {/* Right Column - Order Summary */}
               <div className="order-summary-section w-full lg:flex-1 lg:sticky lg:top-[100px]">
                 <div className="bg-white/60 border border-[rgba(200,170,130,0.28)] rounded-xl p-5">
-                  <h3 className="font-playfair text-lg font-semibold text-[#3d2010] mb-4">
+                  <h3 className="font-['Playfair_Display',serif] text-lg font-semibold text-[#3d2010] mb-4">
                     Order Summary
                   </h3>
 
@@ -360,11 +389,11 @@ export default function CartPage() {
                         value={promoInput}
                         onChange={e => setPromoInput(e.target.value)}
                         placeholder="Discount Code"
-                        className="flex-1 p-2.5 text-[13px] bg-white/70 border border-[rgba(180,140,90,0.28)] rounded-lg outline-none font-dm-sans"
+                        className="flex-1 p-2.5 text-[13px] bg-white/70 border border-[rgba(180,140,90,0.28)] rounded-lg outline-none font-['DM_Sans',sans-serif]"
                       />
                       <button
                         onClick={applyPromo}
-                        className="px-4 py-2.5 bg-[#a0693a] text-white border-none rounded-lg cursor-pointer text-xs font-semibold font-dm-sans hover:bg-[#8a5830] transition"
+                        className="px-4 py-2.5 bg-[#a0693a] text-white border-none rounded-lg cursor-pointer text-xs font-semibold font-['DM_Sans',sans-serif] hover:bg-[#8a5830] transition"
                       >
                         Apply
                       </button>
@@ -418,7 +447,7 @@ export default function CartPage() {
                     onClick={handleOrder}
                     disabled={ordering}
                     className={`
-                      w-full py-3.5 rounded-xl text-[15px] font-bold font-dm-sans transition
+                      w-full py-3.5 rounded-xl text-[15px] font-bold font-['DM_Sans',sans-serif] transition
                       ${ordering 
                         ? 'bg-[rgba(160,105,58,0.5)] cursor-not-allowed' 
                         : 'bg-[#a0693a] cursor-pointer hover:bg-[#8a5830]'}
@@ -431,7 +460,7 @@ export default function CartPage() {
                   {/* Continue Shopping - Desktop only */}
                   <button
                     onClick={() => navigate('/books')}
-                    className="continue-shopping hidden lg:block w-full text-center text-[#a0693a] text-xs font-medium font-dm-sans bg-none border-none cursor-pointer py-3 mt-3 hover:text-[#8a5830] transition"
+                    className="continue-shopping hidden lg:block w-full text-center text-[#a0693a] text-xs font-medium font-['DM_Sans',sans-serif] bg-none border-none cursor-pointer py-3 mt-3 hover:text-[#8a5830] transition"
                   >
                     ← Continue Shopping
                   </button>
@@ -442,7 +471,7 @@ export default function CartPage() {
             {/* Continue Shopping - Mobile only */}
             <button
               onClick={() => navigate('/books')}
-              className="continue-shopping-mobile lg:hidden text-center text-[#a0693a] text-[13px] font-medium font-dm-sans bg-none border-none cursor-pointer py-3 mt-3 hover:text-[#8a5830] transition"
+              className="continue-shopping-mobile lg:hidden text-center text-[#a0693a] text-[13px] font-medium font-['DM_Sans',sans-serif] bg-none border-none cursor-pointer py-3 mt-3 hover:text-[#8a5830] transition"
             >
               ← Continue Shopping
             </button>
