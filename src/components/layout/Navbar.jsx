@@ -7,21 +7,17 @@ try {
   logoSrc = new URL('../../assets/kiddle1.png', import.meta.url).href
 } catch (_) {}
 
+// Simplified navigation links - only Books, Stationery, Accessories
 const NAV_LINKS = [
-  { label: 'Browse Books', href: '/books', filter: null },
-  { label: 'New Arrivals', href: '/books?filter=new-arrivals', filter: 'new-arrivals' },
-  { label: 'Bestsellers', href: '/books?filter=bestsellers', filter: 'bestsellers' },
-  { label: "contact us", href: "/contact", filter: null }
+  { label: 'Books', href: '/books', filter: null },
+  { label: 'Stationery', href: '/category/stationery', filter: null },
+  { label: 'Accessories', href: '/category/accessories', filter: null },
 ]
 
 const DRAWER_LINKS = [
-  { label: 'Browse Books', href: '/books', icon: '📚', filter: null },
-  { label: 'New Arrivals', href: '/books?filter=new-arrivals', icon: '✨', filter: 'new-arrivals' },
-  { label: 'Bestsellers', href: '/books?filter=bestsellers', icon: '🏆', filter: 'bestsellers' },
-  { label: "Children's Collection", href: '/category/childrens', icon: '🧒', filter: null },
-  { label: 'Rare Finds', href: '/category/rare', icon: '🔍', filter: null },
-  { label: 'Gifts & Stationery', href: '/category/gifts', icon: '🎁', filter: null },
-  { label: 'contact us', href: '/contact', icon: '🌿', filter: null },
+  { label: 'Books', href: '/books', icon: '📚', filter: null },
+  { label: 'Stationery', href: '/category/stationery', icon: '✏️', filter: null },
+  { label: 'Accessories', href: '/category/accessories', icon: '🎒', filter: null },
 ]
 
 function NavIconBtn({ children, badge = 0, onClick, title, size = 38 }) {
@@ -117,10 +113,6 @@ export default function Navbar() {
   const wishCount = wishlist?.length ?? 0
 
   useEffect(() => {
-    console.log('Navbar - Cart updated:', { cartLength: cart?.length, itemCount })
-  }, [cart, itemCount])
-
-  useEffect(() => {
     const fn = () => setScrollY(window.scrollY)
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
@@ -183,11 +175,10 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-20 gap-3">
             <KiddleLogo />
 
+            {/* Desktop Navigation - Simplified */}
             <nav className="hidden md:flex items-center gap-[2px]">
               {NAV_LINKS.map(link => {
-                const isActive = activePath === '/books' && link.filter ? 
-                  new URLSearchParams(location.search).get('filter') === link.filter :
-                  activePath === link.href
+                const isActive = activePath === link.href
                 
                 return (
                   <a
@@ -281,9 +272,8 @@ export default function Navbar() {
               </button>
             </div>
 
-            {/* Mobile Icons - Wishlist, Cart, and Menu */}
+            {/* Mobile Icons */}
             <div className="flex md:hidden items-center gap-[7px]">
-              {/* Wishlist Icon on Mobile */}
               <NavIconBtn size={36} title="Wishlist" badge={wishCount} onClick={() => handleNavigation('/wishlist')}>
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
                   <path d="M8 13.5C8 13.5 1.5 9.5 1.5 5.5C1.5 3.5 3 2 5 2C6.2 2 7.2 2.7 8 3.5C8.8 2.7 9.8 2 11 2C13 2 14.5 3.5 14.5 5.5C14.5 9.5 8 13.5 8 13.5Z"
@@ -291,7 +281,6 @@ export default function Navbar() {
                 </svg>
               </NavIconBtn>
 
-              {/* Cart Icon on Mobile */}
               <NavIconBtn size={36} title="Cart" badge={itemCount} onClick={() => handleNavigation('/cart')}>
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
                   <path d="M2 2H3.5L5.5 10H12L13.5 5H4.5" stroke={ICON_COLOR} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={ICON_STYLE}/>
@@ -300,7 +289,6 @@ export default function Navbar() {
                 </svg>
               </NavIconBtn>
 
-              {/* Menu Toggle Button */}
               <button
                 onClick={() => setMenuOpen(v => !v)}
                 aria-label="Toggle navigation"
@@ -324,7 +312,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Mobile Search Bar - Hidden by default, can be triggered from drawer menu */}
+          {/* Mobile Search Bar */}
           <div className={`
             md:hidden overflow-hidden transition-all duration-300 ease-[ease]
             ${searchOpen ? 'max-h-16' : 'max-h-0'}
@@ -361,6 +349,7 @@ export default function Navbar() {
         </div>
       </header>
 
+      {/* Backdrop overlay */}
       <div
         onClick={() => setMenuOpen(false)}
         className={`
@@ -370,6 +359,7 @@ export default function Navbar() {
         `}
       />
 
+      {/* Mobile Drawer Menu - Simplified */}
       <aside className={`
         fixed top-0 right-0 bottom-0 z-[9100] w-[288px]
         bg-[rgba(248,244,236,0.98)] backdrop-blur-[24px] saturate-180
@@ -388,7 +378,6 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Add Search Option to Drawer Menu */}
         <nav className="flex-1 overflow-y-auto p-3">
           {/* Search Option in Drawer */}
           <button
@@ -407,10 +396,9 @@ export default function Navbar() {
             </svg>
           </button>
 
+          {/* Navigation Links in Drawer */}
           {DRAWER_LINKS.map((link) => {
-            const isActive = activePath === '/books' && link.filter ? 
-              new URLSearchParams(location.search).get('filter') === link.filter :
-              activePath === link.href
+            const isActive = activePath === link.href
             
             return (
               <a
