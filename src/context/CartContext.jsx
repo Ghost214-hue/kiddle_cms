@@ -1,4 +1,3 @@
-
 import {
   createContext,
   useContext,
@@ -224,34 +223,46 @@ export function CartProvider({ children }) {
 }
 
 // ─────────────────────────────────────────────
-// Toast UI — rendered inside provider
+// Toast UI — rendered inside provider (Tailwind CSS version)
 // ─────────────────────────────────────────────
 const TOAST_ICONS = {
   cart: (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="flex-shrink-0">
       <path d="M2 2H3.5L5.5 10H12L13.5 5H4.5" stroke="#a0693a" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
       <circle cx="6.5" cy="12.5" r="1" fill="#a0693a"/>
       <circle cx="11.5" cy="12.5" r="1" fill="#a0693a"/>
     </svg>
   ),
   wishlist: (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="flex-shrink-0">
       <path d="M8 13.5C8 13.5 1.5 9.5 1.5 5.5C1.5 3.5 3 2 5 2C6.2 2 7.2 2.7 8 3.5C8.8 2.7 9.8 2 11 2C13 2 14.5 3.5 14.5 5.5C14.5 9.5 8 13.5 8 13.5Z"
         fill="#a0693a" stroke="#a0693a" strokeWidth="1.2"/>
     </svg>
   ),
   remove: (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="flex-shrink-0">
       <circle cx="8" cy="8" r="6.5" stroke="#9a7a5a" strokeWidth="1.3"/>
       <path d="M5.5 8h5" stroke="#9a7a5a" strokeWidth="1.5" strokeLinecap="round"/>
     </svg>
   ),
 }
 
-const TOAST_COLORS = {
-  cart:     { bg: 'rgba(245,240,232,0.97)', border: 'rgba(160,105,58,0.30)', text: '#5c3d1e' },
-  wishlist: { bg: 'rgba(245,240,232,0.97)', border: 'rgba(160,105,58,0.30)', text: '#5c3d1e' },
-  remove:   { bg: 'rgba(245,240,232,0.97)', border: 'rgba(180,140,90,0.22)', text: '#7a5c3a' },
+const TOAST_STYLES = {
+  cart: {
+    bg: 'bg-[rgba(245,240,232,0.97)]',
+    border: 'border-[rgba(160,105,58,0.30)]',
+    text: 'text-[#5c3d1e]'
+  },
+  wishlist: {
+    bg: 'bg-[rgba(245,240,232,0.97)]',
+    border: 'border-[rgba(160,105,58,0.30)]',
+    text: 'text-[#5c3d1e]'
+  },
+  remove: {
+    bg: 'bg-[rgba(245,240,232,0.97)]',
+    border: 'border-[rgba(180,140,90,0.22)]',
+    text: 'text-[#7a5c3a]'
+  },
 }
 
 function ToastContainer({ toasts, onDismiss }) {
@@ -272,60 +283,26 @@ function ToastContainer({ toasts, onDismiss }) {
           animation: ks-toast-in 0.28s cubic-bezier(0.34,1.56,0.64,1) both;
         }
       `}</style>
+      
       <div
         role="region"
         aria-label="Notifications"
-        style={{
-          position: 'fixed',
-          bottom: '24px',
-          right: '20px',
-          zIndex: 9999,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px',
-          pointerEvents: 'none',
-          maxWidth: '320px',
-        }}
+        className="fixed bottom-6 right-5 z-[9999] flex flex-col gap-2 pointer-events-none max-w-[320px]"
       >
         {toasts.map(t => {
-          const c = TOAST_COLORS[t.type] || TOAST_COLORS.cart
+          const styles = TOAST_STYLES[t.type] || TOAST_STYLES.cart
           return (
             <div
               key={t.id}
-              className="ks-toast"
-              role="status"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '11px 14px',
-                background: c.bg,
-                border: `1px solid ${c.border}`,
-                borderRadius: '14px',
-                boxShadow: '0 6px 24px rgba(100,60,20,0.14)',
-                backdropFilter: 'blur(16px)',
-                pointerEvents: 'auto',
-                cursor: 'pointer',
-              }}
+              className={`ks-toast flex items-center gap-2.5 py-3 px-3.5 rounded-xl backdrop-blur-[16px] pointer-events-auto cursor-pointer ${styles.bg} ${styles.border} border shadow-[0_6px_24px_rgba(100,60,20,0.14)]`}
               onClick={() => onDismiss(t.id)}
             >
-              <span style={{ flexShrink: 0 }}>{TOAST_ICONS[t.type]}</span>
-              <span style={{
-                fontSize: '12.5px',
-                fontFamily: "'DM Sans', sans-serif",
-                fontWeight: '500',
-                color: c.text,
-                flex: 1,
-                lineHeight: 1.4,
-              }}>
+              <span className="flex-shrink-0">{TOAST_ICONS[t.type]}</span>
+              <span className={`text-[12.5px] font-dm-sans font-medium flex-1 leading-[1.4] ${styles.text}`}>
                 {t.message}
               </span>
               <button
-                style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  color: '#b09070', fontSize: '13px', padding: '0 2px',
-                  lineHeight: 1, flexShrink: 0,
-                }}
+                className="bg-none border-none cursor-pointer text-[#b09070] text-[13px] px-0 py-0 leading-none flex-shrink-0 hover:text-[#8a6a4a] transition-colors"
                 aria-label="Dismiss"
                 onClick={(e) => { e.stopPropagation(); onDismiss(t.id) }}
               >
