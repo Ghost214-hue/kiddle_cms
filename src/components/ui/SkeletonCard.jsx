@@ -1,44 +1,39 @@
+const shimmerClasses = `
+  animate-[kiddle-shimmer_1.6s_ease-in-out_infinite]
+  bg-gradient-to-r from-amber-50/80 via-amber-50/40 to-amber-50/80
+  bg-[length:200%_100%]
+  rounded-md
+`
 
-const shimmerStyle = {
-  background: 'linear-gradient(90deg, #ede5d8 25%, #f5f0e8 50%, #ede5d8 75%)',
-  backgroundSize: '200% 100%',
-  animation: 'kiddle-shimmer 1.6s ease-in-out infinite',
-  borderRadius: '6px',
-}
-
-function SkeletonBox({ width = '100%', height, style = {} }) {
+function SkeletonBox({ width = '100%', height, className = '', style = {} }) {
   return (
-    <div style={{ ...shimmerStyle, width, height, borderRadius: '6px', ...style }} />
+    <div
+      className={`${shimmerClasses} ${className}`}
+      style={{ width, height, ...style }}
+    />
   )
 }
 
 function BookSkeleton() {
   return (
-    <div style={{
-      background: 'rgba(255,255,255,0.45)',
-      border: '1px solid rgba(200,170,130,0.25)',
-      borderRadius: '18px',
-      padding: '14px',
-      width: '170px',
-      flexShrink: 0,
-    }}>
+    <div className="w-[170px] flex-shrink-0 bg-white/45 border border-amber-800/25 rounded-[18px] p-3.5">
       {/* Cover */}
-      <SkeletonBox height="130px" style={{ borderRadius: '10px', marginBottom: '12px' }} />
+      <SkeletonBox height="130px" className="rounded-[10px] mb-3" />
       {/* Badge row */}
-      <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
-        <SkeletonBox width="48px" height="16px" style={{ borderRadius: '10px' }} />
+      <div className="flex gap-1.5 mb-2">
+        <SkeletonBox width="48px" height="16px" className="rounded-[10px]" />
       </div>
       {/* Title */}
-      <SkeletonBox height="13px" style={{ marginBottom: '5px' }} />
-      <SkeletonBox width="70%" height="13px" style={{ marginBottom: '8px' }} />
+      <SkeletonBox height="13px" className="mb-1" />
+      <SkeletonBox width="70%" height="13px" className="mb-2" />
       {/* Author */}
-      <SkeletonBox width="55%" height="11px" style={{ marginBottom: '12px' }} />
-      {/* Price row */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <SkeletonBox width="55%" height="11px" className="mb-3" />
+      {/* Price row + stars */}
+      <div className="flex justify-between items-center">
         <SkeletonBox width="44px" height="14px" />
-        <div style={{ display: 'flex', gap: '2px' }}>
+        <div className="flex gap-0.5">
           {[...Array(5)].map((_, i) => (
-            <SkeletonBox key={i} width="10px" height="10px" style={{ borderRadius: '50%' }} />
+            <SkeletonBox key={i} width="10px" height="10px" className="rounded-full" />
           ))}
         </div>
       </div>
@@ -48,25 +43,18 @@ function BookSkeleton() {
 
 function OfferSkeleton() {
   return (
-    <div style={{
-      background: 'rgba(255,255,255,0.45)',
-      border: '1px solid rgba(200,170,130,0.25)',
-      borderRadius: '18px',
-      overflow: 'hidden',
-      width: '220px',
-      flexShrink: 0,
-    }}>
+    <div className="w-[220px] flex-shrink-0 bg-white/45 border border-amber-800/25 rounded-[18px] overflow-hidden">
       {/* Image area */}
-      <SkeletonBox height="120px" style={{ borderRadius: '0', marginBottom: '0' }} />
-      <div style={{ padding: '12px 14px 14px' }}>
+      <SkeletonBox height="120px" className="rounded-none mb-0" />
+      <div className="p-3 pb-3.5 px-3.5">
         {/* Title */}
-        <SkeletonBox height="14px" style={{ marginBottom: '6px' }} />
-        <SkeletonBox width="60%" height="14px" style={{ marginBottom: '5px' }} />
+        <SkeletonBox height="14px" className="mb-1.5" />
+        <SkeletonBox width="60%" height="14px" className="mb-1" />
         {/* Author */}
-        <SkeletonBox width="45%" height="11px" style={{ marginBottom: '12px' }} />
+        <SkeletonBox width="45%" height="11px" className="mb-3" />
         {/* Price + stars */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: '6px', alignItems: 'baseline' }}>
+        <div className="flex justify-between items-center">
+          <div className="flex gap-1.5 items-baseline">
             <SkeletonBox width="40px" height="15px" />
             <SkeletonBox width="32px" height="11px" />
           </div>
@@ -79,27 +67,18 @@ function OfferSkeleton() {
 
 function EditorialSkeleton() {
   return (
-    <div style={{
-      background: 'rgba(255,255,255,0.45)',
-      border: '1px solid rgba(200,170,130,0.25)',
-      borderRadius: '20px',
-      padding: '28px',
-      display: 'grid',
-      gridTemplateColumns: '200px 1fr',
-      gap: '28px',
-      alignItems: 'center',
-    }}>
-      <SkeletonBox height="260px" style={{ borderRadius: '12px' }} />
+    <div className="bg-white/45 border border-amber-800/25 rounded-2xl p-7 grid grid-cols-[200px_1fr] gap-7 items-center">
+      <SkeletonBox height="260px" className="rounded-xl" />
       <div>
-        <SkeletonBox width="80px" height="12px" style={{ borderRadius: '10px', marginBottom: '14px' }} />
-        <SkeletonBox height="22px" style={{ marginBottom: '8px' }} />
-        <SkeletonBox width="80%" height="22px" style={{ marginBottom: '16px' }} />
-        <SkeletonBox height="14px" style={{ marginBottom: '6px' }} />
-        <SkeletonBox height="14px" style={{ marginBottom: '6px' }} />
-        <SkeletonBox width="75%" height="14px" style={{ marginBottom: '24px' }} />
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <SkeletonBox width="120px" height="38px" style={{ borderRadius: '24px' }} />
-          <SkeletonBox width="100px" height="38px" style={{ borderRadius: '24px' }} />
+        <SkeletonBox width="80px" height="12px" className="rounded-[10px] mb-3.5" />
+        <SkeletonBox height="22px" className="mb-2" />
+        <SkeletonBox width="80%" height="22px" className="mb-4" />
+        <SkeletonBox height="14px" className="mb-1.5" />
+        <SkeletonBox height="14px" className="mb-1.5" />
+        <SkeletonBox width="75%" height="14px" className="mb-6" />
+        <div className="flex gap-3">
+          <SkeletonBox width="120px" height="38px" className="rounded-3xl" />
+          <SkeletonBox width="100px" height="38px" className="rounded-3xl" />
         </div>
       </div>
     </div>
@@ -107,8 +86,8 @@ function EditorialSkeleton() {
 }
 
 const VARIANT_MAP = {
-  book:      BookSkeleton,
-  offer:     OfferSkeleton,
+  book: BookSkeleton,
+  offer: OfferSkeleton,
   editorial: EditorialSkeleton,
 }
 
@@ -123,14 +102,15 @@ export default function SkeletonCard({ variant = 'book', count = 1 }) {
           100% { background-position: -200% 0 }
         }
       `}</style>
-      {count === 1
-        ? <Component />
-        : (
-          <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-            {[...Array(count)].map((_, i) => <Component key={i} />)}
-          </div>
-        )
-      }
+      {count === 1 ? (
+        <Component />
+      ) : (
+        <div className="flex gap-3.5 flex-wrap">
+          {[...Array(count)].map((_, i) => (
+            <Component key={i} />
+          ))}
+        </div>
+      )}
     </>
   )
 }

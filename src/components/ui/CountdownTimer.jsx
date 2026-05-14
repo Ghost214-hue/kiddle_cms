@@ -22,30 +22,18 @@ function BadgeTimer({ time, urgent }) {
       ? `${time.hours}h ${pad(time.minutes)}m left`
       : `${pad(time.minutes)}m ${pad(time.seconds)}s left`
 
+  const bgColor = urgent ? 'bg-red-800/15' : 'bg-amber-800/15'
+  const borderColor = urgent ? 'border-red-700/25' : 'border-amber-700/25'
+  const iconColor = urgent ? '#b43c1e' : '#a0693a'
+  const textColor = urgent ? 'text-red-800' : 'text-amber-800'
+
   return (
-    <div style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '5px',
-      background: urgent
-        ? 'rgba(180,60,30,0.12)'
-        : 'rgba(160,105,58,0.12)',
-      border: `1px solid ${urgent ? 'rgba(180,60,30,0.25)' : 'rgba(160,105,58,0.25)'}`,
-      borderRadius: '20px',
-      padding: '3px 10px 3px 7px',
-    }}>
-      {/* clock icon */}
+    <div className={`inline-flex items-center gap-1.5 rounded-full ${bgColor} border ${borderColor} pl-1.5 pr-2.5 py-0.5`}>
       <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-        <circle cx="6" cy="6" r="5" stroke={urgent ? '#b43c1e' : '#a0693a'} strokeWidth="1.2"/>
-        <path d="M6 3.5V6l2 1.5" stroke={urgent ? '#b43c1e' : '#a0693a'} strokeWidth="1.2" strokeLinecap="round"/>
+        <circle cx="6" cy="6" r="5" stroke={iconColor} strokeWidth="1.2"/>
+        <path d="M6 3.5V6l2 1.5" stroke={iconColor} strokeWidth="1.2" strokeLinecap="round"/>
       </svg>
-      <span style={{
-        fontSize: '10.5px',
-        fontWeight: '600',
-        color: urgent ? '#b43c1e' : '#7a4e22',
-        fontFamily: "'DM Sans', sans-serif",
-        letterSpacing: '0.01em',
-      }}>
+      <span className={`text-[10.5px] font-semibold font-['DM_Sans',sans-serif] tracking-wide ${textColor}`}>
         {label}
       </span>
     </div>
@@ -54,32 +42,24 @@ function BadgeTimer({ time, urgent }) {
 
 /* ── Inline variant ── */
 function InlineTimer({ time, urgent }) {
+  const textColor = urgent ? 'text-red-800' : 'text-amber-900/80'
+  const separatorColor = 'text-amber-300'
+
   return (
-    <div style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '6px',
-      fontFamily: "'DM Sans', sans-serif",
-    }}>
-      <span style={{ fontSize: '12px', color: '#9a7a5a' }}>Ends in</span>
+    <div className="inline-flex items-center gap-1.5 font-['DM_Sans',sans-serif]">
+      <span className="text-xs text-amber-600">Ends in</span>
       {[
         time.days > 0 ? `${time.days}d` : null,
         pad(time.hours),
         pad(time.minutes),
         pad(time.seconds),
       ].filter(Boolean).map((seg, i, arr) => (
-        <span key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <span style={{
-            fontWeight: '700',
-            fontSize: '13px',
-            color: urgent ? '#b43c1e' : '#5c3d1e',
-            fontVariantNumeric: 'tabular-nums',
-            letterSpacing: '-0.01em',
-          }}>
+        <span key={i} className="flex items-center gap-1">
+          <span className={`font-bold text-[13px] tabular-nums -tracking-wide ${textColor}`}>
             {seg}
           </span>
           {i < arr.length - 1 && (
-            <span style={{ color: '#c4a882', fontWeight: '700', fontSize: '13px' }}>:</span>
+            <span className={`font-bold text-[13px] ${separatorColor}`}>:</span>
           )}
         </span>
       ))}
@@ -102,57 +82,36 @@ function FullTimer({ time, urgent }) {
         { label: 'Seconds', val: pad(time.seconds) },
       ]
 
+  const urgentStyles = urgent
+    ? {
+        blockBg: 'bg-red-800/10',
+        blockBorder: 'border-red-700/20',
+        numberColor: 'text-red-800',
+        separatorColor: 'text-red-700'
+      }
+    : {
+        blockBg: 'bg-white/60',
+        blockBorder: 'border-amber-700/25',
+        numberColor: 'text-amber-950',
+        separatorColor: 'text-amber-300'
+      }
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <div className="flex items-center gap-2">
       {blocks.map(({ label, val }, i) => (
-        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '3px',
-          }}>
-            <div style={{
-              background: urgent
-                ? 'rgba(180,60,30,0.10)'
-                : 'rgba(255,255,255,0.60)',
-              border: `1px solid ${urgent ? 'rgba(180,60,30,0.2)' : 'rgba(180,140,90,0.25)'}`,
-              borderRadius: '10px',
-              padding: '8px 12px',
-              minWidth: '46px',
-              textAlign: 'center',
-            }}>
-              <span style={{
-                fontSize: '20px',
-                fontWeight: '700',
-                color: urgent ? '#b43c1e' : '#3d2010',
-                fontFamily: "'Playfair Display', serif",
-                fontVariantNumeric: 'tabular-nums',
-                letterSpacing: '-0.02em',
-                lineHeight: 1,
-              }}>
+        <div key={label} className="flex items-center gap-2">
+          <div className="flex flex-col items-center gap-0.5">
+            <div className={`${urgentStyles.blockBg} border ${urgentStyles.blockBorder} rounded-[10px] px-3 py-2 min-w-[46px] text-center`}>
+              <span className={`text-xl font-bold font-['Playfair_Display',serif] tabular-nums -tracking-wide leading-none ${urgentStyles.numberColor}`}>
                 {val}
               </span>
             </div>
-            <span style={{
-              fontSize: '9.5px',
-              color: '#9a7a5a',
-              fontFamily: "'DM Sans', sans-serif",
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              fontWeight: '500',
-            }}>
+            <span className="text-[9.5px] text-amber-600 font-['DM_Sans',sans-serif] uppercase tracking-wide font-medium">
               {label}
             </span>
           </div>
           {i < blocks.length - 1 && (
-            <span style={{
-              fontSize: '20px',
-              fontWeight: '700',
-              color: urgent ? '#b43c1e' : '#c4a882',
-              paddingBottom: '18px',
-              lineHeight: 1,
-            }}>
+            <span className={`text-xl font-bold ${urgentStyles.separatorColor} pb-[18px] leading-none`}>
               :
             </span>
           )}
@@ -165,12 +124,7 @@ function FullTimer({ time, urgent }) {
 /* ── Expired state ── */
 function Expired() {
   return (
-    <span style={{
-      fontSize: '11px',
-      color: '#9a7a5a',
-      fontFamily: "'DM Sans', sans-serif",
-      fontStyle: 'italic',
-    }}>
+    <span className="text-[11px] text-amber-600 font-['DM_Sans',sans-serif] italic">
       Offer expired
     </span>
   )
