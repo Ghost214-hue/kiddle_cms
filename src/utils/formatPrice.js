@@ -1,11 +1,11 @@
 
-export function formatPrice(amount, currency = 'USD', locale = 'en-US') {
+export function formatPrice(amount, currency = 'KES', locale = 'en-KE') {
   if (amount == null || isNaN(amount)) return '—'
   return new Intl.NumberFormat(locale, {
     style:                 'currency',
     currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(amount)
 }
 
@@ -51,9 +51,9 @@ export function calcDiscountPct(original, sale) {
  * @param {number} original
  * @param {number} sale
  * @param {string} currency
- * @returns {string}  e.g. "Save $7.50"
+ * @returns {string}  e.g. "Save KES 750"
  */
-export function formatSavings(original, sale, currency = 'USD') {
+export function formatSavings(original, sale, currency = 'KES') {
   if (!Number.isFinite(original) || !Number.isFinite(sale) || sale >= original) return ''
   const saved = original - sale
   return `Save ${formatPrice(saved, currency)}`
@@ -78,9 +78,9 @@ export function isOnSale(original, sale) {
  * @param {number} min
  * @param {number} max
  * @param {string} currency
- * @returns {string}  e.g. "$8.99 – $24.99"
+ * @returns {string}  e.g. "KES 800 – KES 2,400"
  */
-export function formatPriceRange(min, max, currency = 'USD') {
+export function formatPriceRange(min, max, currency = 'KES') {
   if (min == null || max == null) return '—'
   if (min === max) return formatPrice(min, currency)
   return `${formatPrice(min, currency)} – ${formatPrice(max, currency)}`
@@ -119,8 +119,8 @@ export function formatRating(rating) {
 // Cart total calculations
 // ─────────────────────────────────────────────
 
-const SHIPPING_THRESHOLD = 35   // free shipping above this
-const SHIPPING_FLAT      = 5.99
+const SHIPPING_THRESHOLD = 5000   // free shipping above this
+const SHIPPING_FLAT      = 300
 const TAX_RATE           = 0.08 // 8%
 
 /**
@@ -148,7 +148,7 @@ const TAX_RATE           = 0.08 // 8%
  *   promoDiscount: string,
  * }}
  */
-export function formatCartTotal(items = [], promoCode = '', currency = 'USD') {
+export function formatCartTotal(items = [], promoCode = '', currency = 'KES') {
   const subtotalRaw = items.reduce((sum, i) => {
     return sum + (i.salePrice ?? i.price) * i.qty
   }, 0)

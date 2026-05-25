@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useWishlist, useCart } from '../context/CartContext'
+import { formatPrice } from '../utils/formatPrice'
 
 function Stars({ rating }) {
   return (
@@ -120,11 +121,11 @@ export default function WishlistPage() {
                     <div className="flex flex-wrap items-center gap-4 mt-4">
                       <div>
                         <span className="text-xl font-bold text-[#7a4e22]">
-                          ${displayPrice.toFixed(2)}
+                          {formatPrice(displayPrice)}
                         </span>
                         {salePrice && originalPrice > salePrice && (
                           <span className="text-sm text-[#b09070] line-through ml-2">
-                            ${originalPrice.toFixed(2)}
+                            {formatPrice(originalPrice)}
                           </span>
                         )}
                       </div>

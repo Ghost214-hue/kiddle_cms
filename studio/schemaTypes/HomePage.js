@@ -27,6 +27,7 @@ export default {
             { name: 'sub', title: 'Slide Subtitle', type: 'text' },
             { name: 'cta', title: 'Button Text', type: 'string', initialValue: 'Shop Now' },
             { name: 'href', title: 'Button Link', type: 'string', initialValue: '/books' },
+            { name: 'book', title: 'Link to Book (optional)', type: 'reference', to: [{ type: 'book' }] },
             { name: 'image', title: 'Slide Image', type: 'image', options: { hotspot: true } },
             { name: 'gradStart', title: 'Gradient Start Color', type: 'string', initialValue: '#FEF9EC' },
             { name: 'gradEnd', title: 'Gradient End Color', type: 'string', initialValue: '#FEF3C7' },
@@ -38,6 +39,23 @@ export default {
         },
       ],
       validation: R => R.min(1).max(6),
+    },
+
+    // ── FEATURED ITEMS (references) ─────────────────
+    {
+      name: 'featuredBooks',
+      title: 'Featured Books (ordered)',
+      type: 'array',
+      of: [{ type: 'reference', to: [{ type: 'book' }] }],
+      description: 'Pick specific books to show in the featured section/carousel. Order matters.'
+    },
+    {
+      name: 'featuredProducts',
+      title: 'Featured Products (stationery & accessories)',
+      type: 'array',
+      of: [
+        { type: 'reference', to: [{ type: 'stationery' }, { type: 'accessory' }] }
+      ],
     },
 
     // ── CATEGORIES (3 feature cards) ────────────

@@ -4,6 +4,8 @@ import { useCart } from '../context/CartContext'
 import { formatPrice } from '../utils/formatPrice'
 
 const PAYMENT_METHODS = ['CARD', 'PAYPAL']
+const FREE_SHIPPING_THRESHOLD = 5000
+const SHIPPING_FEE = 300
 
 // Helper to get cover color based on book title/genre
 function getCoverColor(book) {
@@ -180,7 +182,7 @@ function calculateCartTotals(items, promoCode = null) {
   }, 0)
   
   const itemCount = items.reduce((sum, item) => sum + item.qty, 0)
-  const shipping = subtotal > 50 ? 0 : 5.99
+  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE
   const tax = subtotal * 0.08
   let discount = 0
   
@@ -201,7 +203,7 @@ function calculateCartTotals(items, promoCode = null) {
     total: formatPrice(total),
     totalRaw: total,
     itemCount,
-    freeShipping: subtotal > 50,
+    freeShipping: subtotal >= FREE_SHIPPING_THRESHOLD,
     promoApplied: discount > 0,
   }
 }
@@ -216,15 +218,15 @@ export default function CartPage() {
   const [ordered, setOrdered] = useState(false)
   const [ordering, setOrdering] = useState(false)
   const [totals, setTotals] = useState({
-    subtotal: '$0',
+    subtotal: formatPrice(0),
     subtotalRaw: 0,
-    shipping: '$0',
+    shipping: formatPrice(0),
     shippingRaw: 0,
-    tax: '$0',
+    tax: formatPrice(0),
     taxRaw: 0,
-    discount: '$0',
+    discount: formatPrice(0),
     discountRaw: 0,
-    total: '$0',
+    total: formatPrice(0),
     totalRaw: 0,
     itemCount: 0,
     freeShipping: false,
@@ -437,9 +439,9 @@ export default function CartPage() {
                     </div>
                   </div>
 
-                  {!totals.freeShipping && totals.subtotalRaw < 50 && (
+                  {!totals.freeShipping && totals.subtotalRaw < FREE_SHIPPING_THRESHOLD && (
                     <div className="bg-[rgba(160,105,58,0.08)] p-2.5 rounded-lg mb-4 text-center text-xs text-[#7a4e22]">
-                      🚚 Add ${(50 - totals.subtotalRaw).toFixed(2)} more for FREE shipping
+                      🚚 Add {formatPrice(FREE_SHIPPING_THRESHOLD - totals.subtotalRaw)} more for FREE shipping
                     </div>
                   )}
 

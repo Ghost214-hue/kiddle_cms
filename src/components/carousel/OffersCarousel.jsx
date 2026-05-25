@@ -1,43 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useCart, useWishlist } from '../../context/CartContext'
-import { fetchActiveOffers, normalizeOffer } from '../../lib/queries'
+import { fetchActiveOffers, fetchSaleProductOffers } from '../../lib/queries'
+import { formatPrice } from '../../utils/formatPrice'
 
-// ── Mock data (fallback) ─────────────────────────────────────────────────
-export const MOCK_OFFERS = [
-  {
-    _id: 'o1', discountPercent: 30, originalPrice: 24.99, salePrice: 17.49,
-    badgeLabel: 'Summer Deal', badgeColor: '#FF6B35',
-    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 47).toISOString(),
-    book: { title: 'The Midnight Library', author: 'Matt Haig', slug: 'the-midnight-library', rating: 4.4, reviewCount: 1240, ageRange: 'Young Adult', coverImage: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80' },
-  },
-  {
-    _id: 'o2', discountPercent: 25, originalPrice: 19.99, salePrice: 14.99,
-    badgeLabel: 'Author Spotlight', badgeColor: '#9C27B0',
-    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 12).toISOString(),
-    book: { title: "The Lion's Secret Garden", author: 'Clara Moss', slug: 'lions-secret-garden', rating: 4.8, reviewCount: 580, ageRange: '4-8 Years', coverImage: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300&q=80' },
-  },
-  {
-    _id: 'o3', discountPercent: 40, originalPrice: 29.99, salePrice: 17.99,
-    badgeLabel: 'Flash Sale', badgeColor: '#E53935',
-    expiresAt: new Date(Date.now() + 1000 * 60 * 55).toISOString(),
-    book: { title: 'Where the Crawdads Sing', author: 'Delia Owens', slug: 'where-the-crawdads-sing', rating: 4.7, reviewCount: 2100, ageRange: 'Adult', coverImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300&q=80' },
-  },
-  {
-    _id: 'o4', discountPercent: 20, originalPrice: 14.99, salePrice: 11.99,
-    badgeLabel: 'Weekly Deal', badgeColor: '#43A047',
-    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 72).toISOString(),
-    book: { title: 'Stars & Beyond', author: 'J. Hartley', slug: 'stars-and-beyond', rating: 4.2, reviewCount: 310, ageRange: '9-12 Years', coverImage: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=300&q=80' },
-  },
-  {
-    _id: 'o5', discountPercent: 35, originalPrice: 22.99, salePrice: 14.94,
-    badgeLabel: 'Book Club Pick', badgeColor: '#E91E63',
-    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3).toISOString(),
-    book: { title: 'Klara and the Sun', author: 'Kazuo Ishiguro', slug: 'klara-and-the-sun', rating: 4.6, reviewCount: 940, ageRange: 'Adult', coverImage: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=300&q=80' },
-  },
-]
 
 function getTimeRemaining(expiresAt) {
+  if (!expiresAt) return 'Limited time'
   const diff = new Date(expiresAt) - new Date()
+  if (!Number.isFinite(diff)) return 'Limited time'
   if (diff <= 0) return 'Expired'
   const days = Math.floor(diff / 86400000)
   const hours = Math.floor((diff % 86400000) / 3600000)
@@ -49,8 +19,27 @@ function getTimeRemaining(expiresAt) {
   return `${seconds}s left`
 }
 
+function offerItemHref(item) {
+  if (item?.type === 'book' || item?._type === 'book') return `/book/${item?.slug || ''}`
+  if (item?.type === 'stationery' || item?._type === 'stationery') return '/category/stationery'
+  if (item?.type === 'accessory' || item?._type === 'accessory') return '/category/accessories'
+  return '/books'
+}
+
+function offerItemLabel(item) {
+  if (item?.type === 'stationery') return 'Stationery'
+  if (item?.type === 'accessory') return 'Accessory'
+  return item?.ageRange || 'Book'
+}
+
+function offerItemCreator(item) {
+  if (item?.type === 'book') return item.author
+  return item?.brand || item?.author || 'Kiddle'
+}
+
 // ── Offer Card ─────────────────────────────────────────────────────────────
 function OfferCard({ offer, onAddToCart, onWishlist, wishlisted = false }) {
+  const item = offer.book
   const [timeLeft, setTimeLeft] = useState(getTimeRemaining(offer.expiresAt))
   useEffect(() => {
     const id = setInterval(() => setTimeLeft(getTimeRemaining(offer.expiresAt)), 1000)
@@ -79,7 +68,7 @@ function OfferCard({ offer, onAddToCart, onWishlist, wishlisted = false }) {
 
       {/* Wishlist */}
       <button
-        onClick={() => onWishlist?.(offer.book)}
+        onClick={() => onWishlist?.(item)}
         style={{
           position: 'absolute', top: '12px', right: '12px', zIndex: 2,
           background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: '50%',
@@ -96,8 +85,8 @@ function OfferCard({ offer, onAddToCart, onWishlist, wishlisted = false }) {
       {/* Cover */}
       <div style={{ background: '#F5F0E8', height: '200px', overflow: 'hidden', position: 'relative' }}>
         <img
-          src={offer.book.coverImage}
-          alt={offer.book.title}
+          src={item.img || item.coverImage}
+          alt={item.title}
           style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }}
           onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
           onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
@@ -116,19 +105,21 @@ function OfferCard({ offer, onAddToCart, onWishlist, wishlisted = false }) {
       <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
           <span style={{ fontSize: '11px', color: '#D97706', fontWeight: '600', background: '#FEF3C7', padding: '2px 8px', borderRadius: '12px' }}>
-            {offer.book.ageRange}
+            {offerItemLabel(item)}
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ fontSize: '11px', color: '#FFB800' }}>★</span>
-            <span style={{ fontSize: '12px', fontWeight: '500', color: '#78350F' }}>{offer.book.rating}</span>
-            <span style={{ fontSize: '10px', color: '#B45309' }}>({offer.book.reviewCount})</span>
+            <span style={{ fontSize: '12px', fontWeight: '500', color: '#78350F' }}>{item.rating ?? 4.0}</span>
+            <span style={{ fontSize: '10px', color: '#B45309' }}>({item.reviewCount || 0})</span>
           </div>
         </div>
 
         <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#78350F', margin: '4px 0', fontFamily: "'Playfair Display', serif", lineHeight: 1.3 }}>
-          {offer.book.title}
+          {item.title}
         </h3>
-        <p style={{ fontSize: '12px', color: '#92400E', margin: '0 0 8px 0' }}>by {offer.book.author}</p>
+        <p style={{ fontSize: '12px', color: '#92400E', margin: '0 0 8px 0' }}>
+          {item.type === 'book' ? 'by ' : ''}{offerItemCreator(item)}
+        </p>
 
         {/* Timer */}
         <div style={{
@@ -144,16 +135,16 @@ function OfferCard({ offer, onAddToCart, onWishlist, wishlisted = false }) {
         {/* Price */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
           <span style={{ fontSize: '22px', fontWeight: '800', color: '#D97706' }}>
-            KES {offer.salePrice?.toLocaleString()}
+            {formatPrice(offer.salePrice)}
           </span>
           <span style={{ fontSize: '14px', color: '#B45309', textDecoration: 'line-through' }}>
-            KES {offer.originalPrice?.toLocaleString()}
+            {formatPrice(offer.originalPrice)}
           </span>
         </div>
 
         <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
           <button
-            onClick={() => onAddToCart?.(offer)}
+            onClick={() => onAddToCart?.()}
             style={{
               flex: 1, background: 'linear-gradient(135deg, #D97706, #B45309)', color: 'white',
               border: 'none', borderRadius: '12px', padding: '10px',
@@ -163,7 +154,7 @@ function OfferCard({ offer, onAddToCart, onWishlist, wishlisted = false }) {
             Add to Cart
           </button>
           <a
-            href={`/book/${offer.book.slug}`}
+            href={offerItemHref(item)}
             style={{
               padding: '10px 16px', background: 'white', border: '1px solid #FCD34D',
               borderRadius: '12px', fontSize: '12px', fontWeight: '600',
@@ -197,10 +188,21 @@ export default function OffersCarousel({
     if (propOffers) { setLoading(false); return }
     fetchActiveOffers()
       .then(data => {
-        if (data?.length) setSanityOffers(data.map(normalizeOffer))
-        setLoading(false)
+        if (data?.length) {
+          setSanityOffers(data)
+          setLoading(false)
+          return null
+        }
+        return fetchSaleProductOffers().then(fallbackData => {
+          setSanityOffers(fallbackData)
+          setLoading(false)
+        })
       })
-      .catch(() => setLoading(false))
+      .catch(() => {
+        fetchSaleProductOffers()
+          .then(fallbackData => setSanityOffers(fallbackData))
+          .finally(() => setLoading(false))
+      })
   }, [propOffers])
 
   useEffect(() => {
@@ -215,10 +217,17 @@ export default function OffersCarousel({
     return () => window.removeEventListener('resize', update)
   }, [])
 
-  const offers = propOffers ?? (sanityOffers.length ? sanityOffers : MOCK_OFFERS)
+  const offers = (propOffers ?? sanityOffers).filter(offer => offer?.book)
   const isLoading = propLoading ?? loading
   const totalPages = Math.ceil(offers.length / itemsPerPage)
   const currentOffers = offers.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)
+
+  const getOfferKey = (offer, index) => {
+    if (!offer) return `offer-fallback-${currentPage}-${index}`
+    if (offer._id != null && offer._id !== '') return `offer-${offer._id}`
+    if (offer.book?.slug) return `offer-${offer.book.slug}`
+    return `offer-fallback-${currentPage}-${index}`
+  }
 
   const goToPage = (p) => setCurrentPage(Math.max(0, Math.min(p, totalPages - 1)))
 
@@ -255,20 +264,39 @@ export default function OffersCarousel({
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: `repeat(${itemsPerPage}, 1fr)`, gap: '20px', transition: 'all 0.3s ease' }}>
-        {isLoading
-          ? [...Array(itemsPerPage)].map((_, i) => (
+        {isLoading ? (
+          [...Array(itemsPerPage)].map((_, i) => (
             <div key={i} style={{ background: '#F5F0E8', borderRadius: '20px', height: '480px', animation: 'pulse 1.5s ease-in-out infinite' }} />
           ))
-          : currentOffers.map(offer => (
+        ) : currentOffers.length ? (
+          currentOffers.map((offer, i) => (
             <OfferCard
-              key={offer._id}
+              key={getOfferKey(offer, i)}
               offer={offer}
-              onAddToCart={() => addToCart?.(offer)}
+              onAddToCart={() => addToCart?.({
+                ...offer.book,
+                price: offer.originalPrice ?? offer.book.price,
+                salePrice: offer.salePrice ?? offer.book.salePrice,
+                originalPrice: offer.originalPrice ?? offer.book.price,
+              })}
               onWishlist={() => toggleWishlist?.(offer.book)}
               wishlisted={wishlist?.some(w => w.slug === offer.book?.slug)}
             />
           ))
-        }
+        ) : (
+          <div style={{
+            gridColumn: `1 / span ${itemsPerPage}`,
+            background: '#FEF9EC',
+            border: '1px solid #FCD34D',
+            borderRadius: '20px',
+            padding: '28px',
+            textAlign: 'center',
+            color: '#92400E',
+            fontSize: '14px',
+          }}>
+            No live offers yet. Add an active Special Offer in Sanity, or add a Sale Price to any book, stationery item, or accessory.
+          </div>
+        )}
       </div>
 
       {totalPages > 1 && (

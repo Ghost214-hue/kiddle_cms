@@ -19,6 +19,7 @@ export default function App() {
           <Route path="/books"             element={<CollectionPage />} />
           <Route path="/category/:slug"    element={<CollectionPage />} />
           <Route path="/book/:slug"        element={<BookDetailPage />} />
+          <Route path="/product/:slug"     element={<BookDetailPage />} />
           <Route path="/cart"              element={<CartPage />} />
           <Route path="/wishlist"          element={<WishlistPage />} />
           <Route path="/contact"             element={<ContactUs />} />

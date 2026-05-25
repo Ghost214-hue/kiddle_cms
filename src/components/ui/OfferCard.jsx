@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import StarRating from '../ui/StarRating'
 import CountdownTimer from '../ui/CountdownTimer'
+import { formatPrice } from '../../utils/formatPrice'
 
 const COVER_FALLBACKS = [
   ['#f5d5a8', '#e0a870'],
@@ -226,11 +227,11 @@ export default function OfferCard({
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-baseline gap-1.5">
               <span className="text-base font-bold text-amber-800 font-['DM_Sans',sans-serif]">
-                ${salePrice.toFixed(2)}
+                {formatPrice(salePrice)}
               </span>
               {originalPrice > salePrice && (
                 <span className="text-xs text-amber-400/80 font-['DM_Sans',sans-serif] line-through">
-                  ${originalPrice.toFixed(2)}
+                  {formatPrice(originalPrice)}
                 </span>
               )}
             </div>

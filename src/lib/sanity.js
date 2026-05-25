@@ -1,12 +1,14 @@
+
 import { createClient } from '@sanity/client'
-import imageUrlBuilder from '@sanity/image-url'
+import { createImageUrlBuilder } from '@sanity/image-url'  // ← named export (not default)
 
 export const client = createClient({
-  projectId: 'stpdpina', 
-  dataset: 'production',
+  projectId: 'stpdpina',   // ← replace with your real project ID
+  dataset:   'production',
   apiVersion: '2024-01-01',
-  useCdn: true,
+  useCdn:    true,
 })
 
-const builder = imageUrlBuilder(client)
+const builder = createImageUrlBuilder(client)
+
 export const urlFor = (source) => builder.image(source)

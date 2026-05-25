@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import StarRating from './StarRating'
+import { formatPrice } from '../../utils/formatPrice'
 
 const SIZES = {
   sm: { width: '148px', coverH: '110px', titleSize: '12px', padding: '12px' },
@@ -217,7 +218,7 @@ export default function BookCard({
         {/* Price + Add to cart */}
         <div className="flex items-center justify-between gap-1.5">
           <span className="text-sm font-bold text-amber-800 font-['DM_Sans',sans-serif]">
-            ${price.toFixed(2)}
+            {formatPrice(price)}
           </span>
 
           <button
