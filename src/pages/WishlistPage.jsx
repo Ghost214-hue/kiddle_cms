@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useWishlist, useCart } from '../context/CartContext'
+import { formatPrice } from '../utils/formatPrice'
 
 function Stars({ rating }) {
   return (
@@ -64,83 +65,90 @@ export default function WishlistPage() {
 
         {/* Wishlist Items */}
         <div className="space-y-4">
-          {wishlist.map((book) => (
-            <div 
-              key={book._id}
-              className={`bg-white rounded-2xl p-6 shadow-sm border border-[rgba(200,170,130,0.2)] transition-all duration-300 ${
-                removingId === book._id ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-              }`}
-            >
-              <div className="flex flex-col md:flex-row gap-6">
-                {/* Book Image */}
-                <Link to={`/book/${book.slug}`} className="md:w-32 flex-shrink-0">
-                  <div className="aspect-[3/4] rounded-xl overflow-hidden bg-gradient-to-br from-[#f5e8d5] to-[#e8d5b8]">
-                    {book.img ? (
-                      <img 
-                        src={book.img} 
-                        alt={book.title}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-4xl">📖</div>
-                    )}
-                  </div>
-                </Link>
+          {wishlist.map((book) => {
+            // Safely extract price values with fallbacks
+            const salePrice = book.salePrice ?? null
+            const originalPrice = book.price ?? 0
+            const displayPrice = salePrice ?? originalPrice ?? 0
 
-                {/* Book Info */}
-                <div className="flex-1">
-                  <Link to={`/book/${book.slug}`} className="hover:no-underline">
-                    <h2 className="font-['Playfair_Display',serif] text-xl font-bold text-[#3d2010] mb-2 hover:text-[#a0693a] transition-colors">
-                      {book.title}
-                    </h2>
-                  </Link>
-                  <p className="text-[#9a7a5a] font-['DM_Sans',sans-serif] mb-2">
-                    by {book.author}
-                  </p>
-                  
-                  <div className="flex items-center gap-2 mb-3">
-                    <Stars rating={book.rating} />
-                    <span className="text-xs text-[#b09070]">
-                      ({book.reviewCount?.toLocaleString()} reviews)
-                    </span>
-                  </div>
-
-                  {book.ageRange && (
-                    <span className="inline-block text-[10px] font-bold bg-[rgba(160,105,58,0.09)] text-[#9a6030] py-1 px-3 rounded-full font-['DM_Sans',sans-serif] mb-3">
-                      {book.ageRange}
-                    </span>
-                  )}
-
-                  <div className="flex flex-wrap items-center gap-4 mt-4">
-                    <div>
-                      <span className="text-xl font-bold text-[#7a4e22]">
-                        ${(book.salePrice ?? book.price).toFixed(2)}
-                      </span>
-                      {book.salePrice && (
-                        <span className="text-sm text-[#b09070] line-through ml-2">
-                          ${book.price.toFixed(2)}
-                        </span>
+            return (
+              <div 
+                key={book._id}
+                className={`bg-white rounded-2xl p-6 shadow-sm border border-[rgba(200,170,130,0.2)] transition-all duration-300 ${
+                  removingId === book._id ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+                }`}
+              >
+                <div className="flex flex-col md:flex-row gap-6">
+                  {/* Book Image */}
+                  <Link to={`/book/${book.slug}`} className="md:w-32 flex-shrink-0">
+                    <div className="aspect-[3/4] rounded-xl overflow-hidden bg-gradient-to-br from-[#f5e8d5] to-[#e8d5b8]">
+                      {book.img ? (
+                        <img 
+                          src={book.img} 
+                          alt={book.title}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-4xl">📖</div>
                       )}
                     </div>
+                  </Link>
 
-                    <button
-                      onClick={() => handleAddToCart(book)}
-                      className="bg-[#a0693a] text-white px-6 py-2 rounded-full font-['DM_Sans',sans-serif] font-semibold hover:bg-[#8a5830] transition-colors"
-                    >
-                      Add to Cart
-                    </button>
+                  {/* Book Info */}
+                  <div className="flex-1">
+                    <Link to={`/book/${book.slug}`} className="hover:no-underline">
+                      <h2 className="font-['Playfair_Display',serif] text-xl font-bold text-[#3d2010] mb-2 hover:text-[#a0693a] transition-colors">
+                        {book.title}
+                      </h2>
+                    </Link>
+                    <p className="text-[#9a7a5a] font-['DM_Sans',sans-serif] mb-2">
+                      by {book.author}
+                    </p>
+                    
+                    <div className="flex items-center gap-2 mb-3">
+                      <Stars rating={book.rating || 0} />
+                      <span className="text-xs text-[#b09070]">
+                        ({book.reviewCount?.toLocaleString() ?? 0} reviews)
+                      </span>
+                    </div>
 
-                    <button
-                      onClick={() => handleRemoveFromWishlist(book)}
-                      className="text-[#b09070] hover:text-red-500 px-4 py-2 rounded-full font-['DM_Sans',sans-serif] transition-colors"
-                    >
-                      Remove
-                    </button>
+                    {book.ageRange && (
+                      <span className="inline-block text-[10px] font-bold bg-[rgba(160,105,58,0.09)] text-[#9a6030] py-1 px-3 rounded-full font-['DM_Sans',sans-serif] mb-3">
+                        {book.ageRange}
+                      </span>
+                    )}
+
+                    <div className="flex flex-wrap items-center gap-4 mt-4">
+                      <div>
+                        <span className="text-xl font-bold text-[#7a4e22]">
+                          {formatPrice(displayPrice)}
+                        </span>
+                        {salePrice && originalPrice > salePrice && (
+                          <span className="text-sm text-[#b09070] line-through ml-2">
+                            {formatPrice(originalPrice)}
+                          </span>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => handleAddToCart(book)}
+                        className="bg-[#a0693a] text-white px-6 py-2 rounded-full font-['DM_Sans',sans-serif] font-semibold hover:bg-[#8a5830] transition-colors"
+                      >
+                        Add to Cart
+                      </button>
+
+                      <button
+                        onClick={() => handleRemoveFromWishlist(book)}
+                        className="text-[#b09070] hover:text-red-500 px-4 py-2 rounded-full font-['DM_Sans',sans-serif] transition-colors"
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Continue Shopping Button */}

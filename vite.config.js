@@ -1,17 +1,28 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
+// vite.config.js
 export default defineConfig({
   plugins: [react()],
-  base: '/',  // Change this to '/'
   build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
-    sourcemap: false,
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        manualChunks: undefined
-      }
-    }
-  }
-})
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (
+              id.includes("react") ||
+              id.includes("react-dom") ||
+              id.includes("react-router")
+            ) {
+              return "vendor";
+            }
+            if (id.includes("@sanity") || id.includes("sanity")) {
+              return "sanity";
+            }
+          }
+        },
+      },
+    },
+  },
+});

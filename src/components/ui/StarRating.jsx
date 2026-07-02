@@ -9,7 +9,7 @@ const SIZES = {
 function Star({ fill = 'full', size = 14, color = '#a0693a' }) {
   const id = `grad-${Math.random().toString(36).slice(2, 7)}`
   return (
-    <svg width={size} height={size} viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+    <svg width={size} height={size} viewBox="0 0 14 14" fill="none" className="shrink-0">
       {fill === 'partial' && (
         <defs>
           <linearGradient id={id}>
@@ -49,13 +49,27 @@ export default function StarRating({
     return 'empty'
   })
 
+  // Gap class mapping based on size
+  const gapClass = {
+    sm: 'gap-[2px]',
+    md: 'gap-[3px]',
+    lg: 'gap-[4px]',
+  }[size] || 'gap-[3px]'
+
+  // Text size class mapping
+  const textSizeClass = {
+    sm: 'text-[10px]',
+    md: 'text-xs',
+    lg: 'text-[13px]',
+  }[size] || 'text-xs'
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: s.gap }}>
+    <div className="flex items-center gap-1.5">
+      <div className={`flex items-center ${gapClass}`}>
         {stars.map((fill, i) => (
           <span
             key={i}
-            style={{ cursor: interactive ? 'pointer' : 'default', lineHeight: 0 }}
+            className={`leading-[0] ${interactive ? 'cursor-pointer' : 'cursor-default'}`}
             onMouseEnter={() => interactive && setHovered(i + 1)}
             onMouseLeave={() => interactive && setHovered(null)}
             onClick={() => interactive && onChange?.(i + 1)}
@@ -66,22 +80,13 @@ export default function StarRating({
       </div>
 
       {showCount && count !== undefined && (
-        <span style={{
-          fontSize: s.text,
-          color: '#9a7a5a',
-          fontFamily: "'DM Sans', sans-serif",
-        }}>
+        <span className={`${textSizeClass} text-amber-600/70 font-['DM_Sans',sans-serif]`}>
           ({count.toLocaleString()})
         </span>
       )}
 
       {showCount && count === undefined && rating > 0 && (
-        <span style={{
-          fontSize: s.text,
-          color: '#9a7a5a',
-          fontFamily: "'DM Sans', sans-serif",
-          fontWeight: 500,
-        }}>
+        <span className={`${textSizeClass} text-amber-600/70 font-['DM_Sans',sans-serif] font-medium`}>
           {rating.toFixed(1)}
         </span>
       )}

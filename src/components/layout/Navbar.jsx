@@ -12,12 +12,15 @@ const NAV_LINKS = [
   { label: 'Books', href: '/books', filter: null },
   { label: 'Stationery', href: '/category/stationery', filter: null },
   { label: 'Accessories', href: '/category/accessories', filter: null },
+    { label: 'contact', href: '/contact', filter: null },
+
 ]
 
 const DRAWER_LINKS = [
   { label: 'Books', href: '/books', icon: '📚', filter: null },
   { label: 'Stationery', href: '/category/stationery', icon: '✏️', filter: null },
   { label: 'Accessories', href: '/category/accessories', icon: '🎒', filter: null },
+  {label : 'Contact', href: '/contact', icon: '📞', filter: null },
 ]
 
 function NavIconBtn({ children, badge = 0, onClick, title, size = 38 }) {

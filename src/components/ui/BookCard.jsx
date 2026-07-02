@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import StarRating from './StarRating'
+import { formatPrice } from '../../utils/formatPrice'
 
 const SIZES = {
   sm: { width: '148px', coverH: '110px', titleSize: '12px', padding: '12px' },
@@ -28,6 +29,24 @@ function getHashColor(str) {
   return COVER_FALLBACKS[Math.abs(hash) % COVER_FALLBACKS.length]
 }
 
+const sizeClasses = {
+  sm: {
+    wrapper: 'w-[148px] p-3',
+    coverH: 'h-[110px]',
+    titleSize: 'text-[12px]',
+  },
+  md: {
+    wrapper: 'w-[170px] p-3.5',
+    coverH: 'h-[130px]',
+    titleSize: 'text-[13px]',
+  },
+  lg: {
+    wrapper: 'w-[200px] p-4',
+    coverH: 'h-[160px]',
+    titleSize: 'text-[14px]',
+  },
+}
+
 export default function BookCard({
   book = {},
   onAddToCart,
@@ -35,22 +54,24 @@ export default function BookCard({
   wishlisted = false,
   size = 'md',
 }) {
-  const [hovered, setHovered]   = useState(false)
-  const [added,   setAdded]     = useState(false)
+  const [hovered, setHovered] = useState(false)
+  const [added, setAdded] = useState(false)
   const [imgError, setImgError] = useState(false)
 
   const s = SIZES[size] || SIZES.md
+  const currentSize = sizeClasses[size] || sizeClasses.md
+
   const {
-    title       = 'Untitled',
-    author      = '',
-    price       = 0,
-    rating      = 0,
+    title = 'Untitled',
+    author = '',
+    price = 0,
+    rating = 0,
     reviewCount,
     coverImage,
     ageRange,
     badge,
-    badgeColor  = 'tan',
-    slug        = '#',
+    badgeColor = 'tan',
+    slug = '#',
   } = book
 
   const fallbackBg = getHashColor(title)
@@ -73,46 +94,37 @@ export default function BookCard({
   return (
     <a
       href={`/book/${slug}`}
-      style={{ textDecoration: 'none', flexShrink: 0 }}
+      className="group flex-shrink-0 no-underline"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div style={{
-        width: s.width,
-        background: 'rgba(255,255,255,0.52)',
-        border: '1px solid rgba(200,170,130,0.32)',
-        borderRadius: '18px',
-        padding: s.padding,
-        cursor: 'pointer',
-        transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-        transform: hovered ? 'translateY(-5px)' : 'translateY(0)',
-        boxShadow: hovered
-          ? '0 12px 36px rgba(100,60,20,0.16)'
-          : '0 3px 16px rgba(100,60,20,0.08)',
-        backdropFilter: 'blur(14px)',
-        position: 'relative',
-      }}>
-
-        {/* ── Wishlist btn ── */}
+      <div
+        className={`
+          ${currentSize.wrapper}
+          bg-white/50
+          border border-[rgba(200,170,130,0.32)]
+          rounded-[18px]
+          cursor-pointer
+          transition-all duration-200 ease-out
+          group-hover:translate-y-[-5px]
+          shadow-[0_3px_16px_rgba(100,60,20,0.08)]
+          group-hover:shadow-[0_12px_36px_rgba(100,60,20,0.16)]
+          backdrop-blur-md
+          relative
+        `}
+      >
+        {/* Wishlist button */}
         <button
           onClick={handleWishlist}
-          style={{
-            position: 'absolute',
-            top: '10px',
-            right: '10px',
-            width: '28px',
-            height: '28px',
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.75)',
-            border: '1px solid rgba(180,140,90,0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            zIndex: 2,
-            opacity: hovered || wishlisted ? 1 : 0,
-            transition: 'opacity 0.2s ease',
-          }}
+          className={`
+            absolute top-2.5 right-2.5
+            w-7 h-7 rounded-full
+            bg-white/75 border border-amber-800/20
+            flex items-center justify-center
+            cursor-pointer z-10
+            transition-opacity duration-200
+            ${wishlisted ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
+          `}
         >
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
             <path
@@ -124,66 +136,34 @@ export default function BookCard({
           </svg>
         </button>
 
-        {/* ── Cover image ── */}
-        <div style={{
-          width: '100%',
-          height: s.coverH,
-          borderRadius: '10px',
-          marginBottom: '10px',
-          overflow: 'hidden',
-          background: fallbackBg,
-          position: 'relative',
-          transition: 'transform 0.25s ease',
-          transform: hovered ? 'scale(1.03)' : 'scale(1)',
-        }}>
+        {/* Cover image area */}
+        <div
+          className={`
+            relative w-full ${currentSize.coverH}
+            rounded-[10px] mb-2.5 overflow-hidden
+            transition-transform duration-200
+            group-hover:scale-105
+          `}
+          style={{ background: fallbackBg }}
+        >
           {coverImage && !imgError ? (
             <img
               src={typeof coverImage === 'string' ? coverImage : coverImage?.asset?.url}
               alt={title}
               onError={() => setImgError(true)}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              className="w-full h-full object-cover"
             />
           ) : (
-            /* Fallback: decorative book spine illustration */
-            <div style={{
-              width: '100%',
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '12px',
-            }}>
-              <div style={{
-                width: '55%',
-                height: '85%',
-                background: 'rgba(255,255,255,0.25)',
-                borderRadius: '2px 6px 6px 2px',
-                border: '1px solid rgba(255,255,255,0.4)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '8px',
-                position: 'relative',
-              }}>
-                <div style={{
-                  position: 'absolute', left: 0, top: 0, bottom: 0, width: '8px',
-                  background: 'rgba(0,0,0,0.12)', borderRadius: '2px 0 0 2px',
-                }} />
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.7 }}>
+            /* Fallback book spine illustration */
+            <div className="w-full h-full flex items-center justify-center p-3">
+              <div className="relative w-[55%] h-[85%] bg-white/25 rounded-[2px_6px_6px_2px] border border-white/40 flex flex-col items-center justify-center p-2">
+                <div className="absolute left-0 top-0 bottom-0 w-2 bg-black/10 rounded-l-[2px]" />
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="opacity-70">
                   <path d="M4 19V5a2 2 0 012-2h13a1 1 0 011 1v13" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" strokeLinecap="round"/>
                   <path d="M4 19a2 2 0 002 2h14" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" strokeLinecap="round"/>
                   <path d="M9 7h7M9 11h5" stroke="rgba(255,255,255,0.9)" strokeWidth="1.3" strokeLinecap="round"/>
                 </svg>
-                <div style={{
-                  fontSize: '7.5px',
-                  color: 'rgba(255,255,255,0.85)',
-                  fontFamily: "'Playfair Display', serif",
-                  textAlign: 'center',
-                  marginTop: '5px',
-                  fontWeight: '600',
-                  lineHeight: 1.3,
-                }}>
+                <div className="text-[7.5px] text-white/85 font-['Playfair_Display',serif] text-center mt-1 font-semibold leading-tight">
                   {title.split(' ').slice(0, 3).join(' ')}
                 </div>
               </div>
@@ -192,115 +172,68 @@ export default function BookCard({
 
           {/* Badge */}
           {badge && (
-            <div style={{
-              position: 'absolute',
-              top: '8px',
-              left: '8px',
-              background: bc.bg,
-              border: `1px solid ${bc.border}`,
-              borderRadius: '12px',
-              padding: '3px 8px',
-              fontSize: '9.5px',
-              fontWeight: '700',
-              color: bc.text,
-              fontFamily: "'DM Sans', sans-serif",
-              letterSpacing: '0.02em',
-              backdropFilter: 'blur(8px)',
-            }}>
+            <div
+              className="absolute top-2 left-2 rounded-2xl px-2 py-0.5 text-[9.5px] font-bold font-['DM_Sans',sans-serif] tracking-wide backdrop-blur-sm"
+              style={{
+                background: bc.bg,
+                border: `1px solid ${bc.border}`,
+                color: bc.text,
+              }}
+            >
               {badge}
             </div>
           )}
         </div>
 
-        {/* ── Age range tag ── */}
+        {/* Age range */}
         {ageRange && (
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            background: 'rgba(160,105,58,0.09)',
-            borderRadius: '10px',
-            padding: '2px 8px',
-            marginBottom: '6px',
-          }}>
-            <span style={{
-              fontSize: '9.5px',
-              color: '#9a6030',
-              fontFamily: "'DM Sans', sans-serif",
-              fontWeight: '500',
-            }}>
+          <div className="inline-flex items-center bg-amber-800/10 rounded-[10px] px-2 py-0.5 mb-1.5">
+            <span className="text-[9.5px] text-amber-800/80 font-['DM_Sans',sans-serif] font-medium">
               {ageRange}
             </span>
           </div>
         )}
 
-        {/* ── Title ── */}
-        <div style={{
-          fontSize: s.titleSize,
-          fontFamily: "'Playfair Display', serif",
-          fontWeight: '600',
-          color: '#3d2010',
-          lineHeight: 1.35,
-          marginBottom: '3px',
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-        }}>
+        {/* Title */}
+        <div
+          className={`
+            ${currentSize.titleSize}
+            font-['Playfair_Display',serif] font-semibold text-amber-950
+            leading-tight mb-0.5 line-clamp-2
+          `}
+        >
           {title}
         </div>
 
-        {/* ── Author ── */}
-        <div style={{
-          fontSize: '11px',
-          color: '#9a7a5a',
-          fontFamily: "'DM Sans', sans-serif",
-          marginBottom: '8px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}>
+        {/* Author */}
+        <div className="text-[11px] text-amber-700/60 font-['DM_Sans',sans-serif] mb-2 whitespace-nowrap overflow-hidden text-ellipsis">
           {author}
         </div>
 
-        {/* ── Stars ── */}
-        <div style={{ marginBottom: '10px' }}>
+        {/* Stars */}
+        <div className="mb-2.5">
           <StarRating rating={rating} count={reviewCount} size="sm" showCount={!!reviewCount} />
         </div>
 
-        {/* ── Price + Add to cart ── */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '6px',
-        }}>
-          <span style={{
-            fontSize: '14px',
-            fontWeight: '700',
-            color: '#7a4e22',
-            fontFamily: "'DM Sans', sans-serif",
-          }}>
-            ${price.toFixed(2)}
+        {/* Price + Add to cart */}
+        <div className="flex items-center justify-between gap-1.5">
+          <span className="text-sm font-bold text-amber-800 font-['DM_Sans',sans-serif]">
+            {formatPrice(price)}
           </span>
 
           <button
             onClick={handleAddToCart}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              background: added ? 'rgba(60,140,80,0.15)' : 'rgba(160,105,58,0.14)',
-              border: `1px solid ${added ? 'rgba(60,140,80,0.3)' : 'rgba(160,105,58,0.3)'}`,
-              borderRadius: '16px',
-              padding: '5px 10px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              fontSize: '10.5px',
-              fontWeight: '600',
-              color: added ? '#2d7a45' : '#7a4e22',
-              fontFamily: "'DM Sans', sans-serif",
-              whiteSpace: 'nowrap',
-            }}
+            className={`
+              flex items-center gap-1
+              rounded-2xl px-2.5 py-1.25
+              cursor-pointer transition-all duration-200
+              text-[10.5px] font-semibold font-['DM_Sans',sans-serif]
+              whitespace-nowrap
+              ${added
+                ? 'bg-green-800/15 border border-green-700/30 text-green-800'
+                : 'bg-amber-700/15 border border-amber-700/30 text-amber-800'
+              }
+            `}
           >
             {added ? (
               <>
