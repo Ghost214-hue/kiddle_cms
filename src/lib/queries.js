@@ -49,6 +49,14 @@ export function normalizeBook(b) {
 
   if (b.subject && !cats.includes(b.subject)) cats.push(b.subject);
 
+  // Handle publisher - can be a reference object or string (legacy)
+  let publisherName = null;
+  if (typeof b.publisher === "object" && b.publisher?.name) {
+    publisherName = b.publisher.name;
+  } else if (typeof b.publisher === "string") {
+    publisherName = b.publisher;
+  }
+
   return {
     ...b,
     _type: "book",
@@ -70,7 +78,7 @@ export function normalizeBook(b) {
     ageRange: b.ageRange ?? "",
     description: b.description ?? "",
     pageCount: b.pageCount ?? null,
-    publisher: b.publisher ?? null,
+    publisher: publisherName,
     publishedDate: b.publishedDate ?? null,
     isbn: b.isbn ?? null,
     language: b.language ?? "English",
@@ -181,9 +189,26 @@ const BOOK_FIELDS = `
   _id, title, author, price, salePrice, rating, reviewCount,
   ageRange, badge, badgeColor, coverImage, inStock, featured,
   category, genres, gradeLevel, subject,
-  description, pageCount, publisher, publishedDate, isbn, language, formats,
+  description, pageCount, publisher-> { name, "slug": slug.current }, publishedDate, isbn, language, formats,
   "slug": slug.current
 `;
+
+const PRODUCT_REFERENCE_FIELDS = `
+  _id, _type, title, author, brand, price, salePrice, rating, reviewCount,
+  ageRange, badge, badgeColor, coverImage, inStock, featured,
+  category, genres, gradeLevel, subject,
+  description, pageCount, publisher-> { name, "slug": slug.current }, publishedDate, isbn, language, formats,
+  material, color, size, dimensions, packSize, sku, careInstructions,
+  "slug": slug.current
+`;
+
+function normalizeProduct(item) {
+  if (!item) return null;
+  if (item._type === "book") return normalizeBook(item);
+  if (item._type === "stationery") return normalizeStationery(item);
+  if (item._type === "accessory") return normalizeAccessory(item);
+  return item;
+}
 
 export const fetchBooks = () =>
   client
@@ -221,7 +246,7 @@ export const fetchProductBySlug = (slug) =>
       _id, _type, title, author, brand, price, salePrice, rating, reviewCount,
       ageRange, badge, badgeColor, coverImage, inStock, featured,
       category, genres, gradeLevel, subject,
-      description, pageCount, publisher, publishedDate, isbn, language, formats,
+      description, pageCount, publisher-> { name, "slug": slug.current }, publishedDate, isbn, language, formats,
       material, color, size, dimensions, packSize, sku, careInstructions,
       "slug": slug.current
     }`,
@@ -296,7 +321,9 @@ export const fetchHomePage = () =>
         "img": image.asset->url, "grad": [gradStart, gradEnd], accent
       },
       featuredBooks[]-> { ${BOOK_FIELDS} },
-      featuredProducts[]-> { _id, _type, title, brand, price, salePrice, reviewCount, badge, badgeColor, coverImage, "slug": slug.current },
+      featuredProducts[]-> { ${PRODUCT_REFERENCE_FIELDS} },
+      featuredStationery[]-> { ${PRODUCT_REFERENCE_FIELDS} },
+      featuredAccessories[]-> { ${PRODUCT_REFERENCE_FIELDS} },
       categories[] {
         "slug": slug.current, label, icon, desc, "img": image.asset->url, accent
       },
@@ -322,11 +349,13 @@ export const fetchHomePage = () =>
         doc.featuredBooks = doc.featuredBooks.map((b) => normalizeBook(b));
       }
       if (Array.isArray(doc.featuredProducts)) {
-        doc.featuredProducts = doc.featuredProducts.map((p) => {
-          if (p._type === "stationery") return normalizeStationery(p);
-          if (p._type === "accessory") return normalizeAccessory(p);
-          return p;
-        });
+        doc.featuredProducts = doc.featuredProducts.map(normalizeProduct);
+      }
+      if (Array.isArray(doc.featuredStationery)) {
+        doc.featuredStationery = doc.featuredStationery.map(normalizeProduct);
+      }
+      if (Array.isArray(doc.featuredAccessories)) {
+        doc.featuredAccessories = doc.featuredAccessories.map(normalizeProduct);
       }
       return doc;
     });
@@ -337,23 +366,14 @@ export const fetchFeaturedCarousel = (slug) =>
     .fetch(
       `*[_type == "featuredCarousel" && ${slug ? "slug.current == $slug" : "active == true"}][0] {
       eyebrow, title, subtitle, viewAllHref, themeColor, active,
-      items[]-> {
-        _type, _id, title, brand, author, price, salePrice, rating, reviewCount,
-        ageRange, badge, badgeColor, coverImage, category, genres, gradeLevel, subject,
-        "slug": slug.current
-      }
+      items[]-> { ${PRODUCT_REFERENCE_FIELDS} }
     }`,
       { slug },
     )
     .then((doc) => {
       if (!doc) return null;
       if (Array.isArray(doc.items)) {
-        doc.items = doc.items.map((i) => {
-          if (i._type === "book") return normalizeBook(i);
-          if (i._type === "stationery") return normalizeStationery(i);
-          if (i._type === "accessory") return normalizeAccessory(i);
-          return i;
-        });
+        doc.items = doc.items.map(normalizeProduct);
       }
       return doc;
     });
@@ -363,18 +383,11 @@ export const fetchAllProducts = () =>
   client
     .fetch(
       `*[_type in ["book","stationery","accessory"]] | order(_createdAt desc) {
-      _id, _type, title, author, brand, price, salePrice, rating, reviewCount,
-      ageRange, badge, badgeColor, coverImage, inStock, featured,
-      category, genres, gradeLevel, subject,
-      description, pageCount, publisher, publishedDate, isbn, language, formats,
-      "slug": slug.current
+      ${PRODUCT_REFERENCE_FIELDS}
     }`,
     )
     .then((results) =>
       results.map((item) => {
-        if (item._type === "book") return normalizeBook(item);
-        if (item._type === "stationery") return normalizeStationery(item);
-        if (item._type === "accessory") return normalizeAccessory(item);
-        return item;
+        return normalizeProduct(item);
       }),
     );

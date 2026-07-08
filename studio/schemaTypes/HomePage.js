@@ -51,17 +51,38 @@ export default {
     },
     {
       name: 'featuredProducts',
-      title: 'Featured Products (stationery & accessories)',
+      title: 'Featured Products (legacy mixed shelf)',
       type: 'array',
       of: [
         { type: 'reference', to: [{ type: 'stationery' }, { type: 'accessory' }] }
       ],
+      description: 'Legacy mixed shelf. Prefer Featured Stationery and Featured Accessories below for the redesigned homepage.',
+    },
+    {
+      name: 'featuredStationery',
+      title: 'Featured Stationery',
+      type: 'array',
+      of: [
+        { type: 'reference', to: [{ type: 'stationery' }], options: { disableNew: true } }
+      ],
+      description: 'Products shown in the Stationery homepage carousel. Order matters.',
+      validation: R => R.max(12),
+    },
+    {
+      name: 'featuredAccessories',
+      title: 'Featured Accessories',
+      type: 'array',
+      of: [
+        { type: 'reference', to: [{ type: 'accessory' }], options: { disableNew: true } }
+      ],
+      description: 'Products shown in the Accessories homepage carousel. Order matters.',
+      validation: R => R.max(12),
     },
 
-    // ── CATEGORIES (3 feature cards) ────────────
+    // ── CATEGORIES ────────────
     {
       name: 'categories',
-      title: 'Feature Categories (3 cards on Hero)',
+      title: 'Homepage Category Cards',
       type: 'array',
       of: [
         {
@@ -77,7 +98,7 @@ export default {
           preview: { select: { title: 'label', subtitle: 'desc', media: 'image' } },
         },
       ],
-      validation: R => R.max(3),
+      validation: R => R.max(8),
     },
 
     // ── STATS ────────────────────────────────────

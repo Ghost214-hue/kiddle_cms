@@ -7,8 +7,10 @@ import stationery from './stationery'
 import accessory from './accessories'
 import featuredCarousel from './featuredCarousel'
 import contactUs from './contactUs'
+import publisher from './publisher'
 
 export const schemaTypes = [
+  publisher,
   book,
   offer,
   homePage,

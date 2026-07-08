@@ -176,7 +176,7 @@ export default function ContactPage() {
   return (
     <div className="bg-[#f5f0e8] min-h-screen pt-20">
       {/* Page header */}
-      <div className="max-w-[1100px] mx-auto px-[clamp(20px,4vw,48px)] pt-[clamp(40px,6vw,72px)] pb-0">
+      <div className="px-[clamp(48px,6vw,100px)] pt-[clamp(40px,6vw,72px)] pb-0">
         <div className="inline-flex items-center bg-[rgba(160,105,58,0.10)] border border-[rgba(160,105,58,0.22)] rounded-[20px] px-4 py-[5px] text-[10.5px] font-bold text-[#a0693a] font-['DM_Sans',sans-serif] tracking-[0.08em] uppercase mb-4">
           We'd love to hear from you
         </div>
@@ -189,7 +189,7 @@ export default function ContactPage() {
       </div>
 
       {/* Two-column body */}
-      <div className="max-w-[1100px] mx-auto px-[clamp(20px,4vw,48px)] py-[clamp(32px,5vw,56px)] pb-[clamp(48px,7vw,96px)]">
+      <div className="px-[clamp(48px,6vw,100px)] py-[clamp(32px,5vw,56px)] pb-[clamp(48px,7vw,96px)]">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.55fr] gap-[clamp(32px,5vw,64px)] items-start">
           {/* LEFT — CMS-driven contact details */}
           <div className="flex flex-col gap-8">

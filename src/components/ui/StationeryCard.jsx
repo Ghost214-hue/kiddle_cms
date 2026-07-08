@@ -1,5 +1,5 @@
 import ProductCard from "./ProductCard";
 
-export default function BookCard(props) {
+export default function StationeryCard(props) {
   return <ProductCard {...props} />;
 }

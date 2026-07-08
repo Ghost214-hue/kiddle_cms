@@ -731,7 +731,7 @@ export default function CartPage() {
   return (
     <>
       <div className="bg-[#f5f0e8] min-h-screen pt-[68px]">
-        <div className="px-4 py-5 pb-10 md:px-6 lg:px-8 lg:max-w-[1280px] lg:mx-auto">
+        <div className="px-[clamp(48px,6vw,100px)] py-5 pb-10">
           {/* Back button */}
           <button
             onClick={() => navigate(-1)}
