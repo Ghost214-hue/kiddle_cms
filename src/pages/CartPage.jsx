@@ -671,7 +671,7 @@ export default function CartPage() {
   const [orderId, setOrderId] = useState(null);
 
   useEffect(() => {
-    setItems(cart || []);
+    if (cart) setItems(cart);
     setTotals(calculateCartTotals(cart || [], promoCode));
   }, [cart, promoCode]);
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useId } from "react";
 
 const SIZES = {
   xs: { star: 9, text: "8px", gap: "1px" },
@@ -7,8 +7,7 @@ const SIZES = {
   lg: { star: 18, text: "13px", gap: "4px" },
 };
 
-function Star({ fill = "full", size = 14, color = "#a0693a" }) {
-  const id = `grad-${Math.random().toString(36).slice(2, 7)}`;
+function Star({ fill = "full", size = 14, color = "#a0693a", id }) {
   return (
     <svg
       width={size}
@@ -51,6 +50,8 @@ export default function StarRating({
   const s = SIZES[size] || SIZES.md;
   const display = hovered ?? rating;
 
+  const uid = useId();
+  const starIds = Array.from({ length: 5 }, (_, i) => `${uid}-grad-${i}`);
   const stars = Array.from({ length: 5 }, (_, i) => {
     const val = i + 1;
     if (display >= val) return "full";
@@ -87,7 +88,7 @@ export default function StarRating({
             onMouseLeave={() => interactive && setHovered(null)}
             onClick={() => interactive && onChange?.(i + 1)}
           >
-            <Star fill={fill} size={s.star} />
+            <Star fill={fill} size={s.star} id={starIds[i]} />
           </span>
         ))}
       </div>

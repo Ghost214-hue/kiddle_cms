@@ -1,0 +1,31 @@
+# Kiddle Bookshop robots.txt
+# Tell search engines which pages to crawl
+
+User-agent: *
+Allow: /
+
+# Disallow private pages (optional but recommended)
+Disallow: /api/
+Disallow: /.git/
+Disallow: /studio/
+Disallow: /dashboard/
+
+# Allow important files
+Allow: /sitemap.xml
+Allow: /robots.txt
+
+# Crawl delay (optional)
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://www.kiddlebookshop.com/sitemap.xml
+
+# Image indexing
+User-agent: Googlebot-Image
+Allow: /assets/
+
+# Prevent indexing of search results and filter pages
+Disallow: /*?filter=
+Disallow: /*?sort=
+Disallow: /*?page=
+Disallow: /*?search=

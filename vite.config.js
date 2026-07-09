@@ -4,6 +4,11 @@ import react from "@vitejs/plugin-react";
 // vite.config.js
 export default defineConfig({
   plugins: [react()],
+  server: {
+    fs: {
+      ignore: ["studio"],
+    },
+  },
   build: {
     chunkSizeWarningLimit: 1000,
     rollupOptions: {

@@ -1,4 +1,6 @@
+import React from "react";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import {
   Backpack,
   BookOpen,
@@ -76,7 +78,9 @@ function FadeSection({ children, className = "" }) {
 }
 
 function CategoryCard({ category, index }) {
-  const Icon = category.icon || FALLBACK_CATEGORIES[index % FALLBACK_CATEGORIES.length].icon;
+  const Icon =
+    category.icon ||
+    FALLBACK_CATEGORIES[index % FALLBACK_CATEGORIES.length].icon;
   const href = category.slug?.startsWith("books?")
     ? `/${category.slug}`
     : category.slug === "books"
@@ -91,8 +95,18 @@ function CategoryCard({ category, index }) {
       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#f2eadf] text-[#182a7a] transition group-hover:bg-[#182a7a] group-hover:text-white">
         {typeof Icon === "function" ? (
           <Icon size={23} />
+        ) : React.isValidElement(Icon) ? (
+          Icon
         ) : (
-          <span className="text-xl">{Icon || <Sparkles size={23} />}</span>
+          <span className="text-xl">
+            {typeof Icon === "string" || typeof Icon === "number" ? (
+              Icon
+            ) : typeof Icon === "undefined" ? (
+              ""
+            ) : (
+              <Sparkles size={23} />
+            )}
+          </span>
         )}
       </span>
       <span className="min-w-0">
@@ -128,6 +142,16 @@ function SectionHeader({ eyebrow, title, subtitle }) {
 export default function HomePage() {
   const [cmsData, setCmsData] = useState(null);
   const [products, setProducts] = useState([]);
+
+  // SEO data
+  const seoData = {
+    title: "Children's Books, Stationery & Educational Resources",
+    description:
+      "Shop children's books, CBC textbooks, stationery, and educational resources at Kiddle Bookshop. Fast delivery across Kenya. Browse story books, novels, school supplies, and accessories.",
+    keywords:
+      "children's books, kids books, CBC textbooks, stationery, school supplies, educational resources, picture books, story books, novels, Kenya bookshop, Kiddle Bookshop",
+    url: "/",
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -180,69 +204,123 @@ export default function HomePage() {
           .slice(0, 12);
 
   return (
-    <div className="min-h-screen bg-[#f7f1e8] pt-20">
-      <div className="px-4 py-8 sm:px-6 lg:px-8">
-        <FadeSection className="pb-10">
-          <SectionHeader
-            eyebrow="Shop By Category"
-            title="Find the next book, tool, or school essential faster."
-            subtitle="Browse polished category shortcuts first, then move straight into curated shelves."
-          />
+    <>
+      <Helmet>
+        <title>{seoData.title} | Kiddle Bookshop</title>
+        <meta name="title" content={`${seoData.title} | Kiddle Bookshop`} />
+        <meta name="description" content={seoData.description} />
+        <meta name="keywords" content={seoData.keywords} />
+        <link
+          rel="canonical"
+          href={`https://www.kiddlebookshop.com${seoData.url}`}
+        />
+        <meta
+          property="og:url"
+          content={`https://www.kiddlebookshop.com${seoData.url}`}
+        />
+      </Helmet>
 
-          <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-3 scrollbar-none sm:mx-0 sm:grid sm:grid-cols-2 sm:px-0 lg:grid-cols-4">
-            {categories.map((category, index) => (
-              <CategoryCard
-                key={`${category.slug}-${category.label}-${index}`}
-                category={category}
-                index={index}
-              />
-            ))}
+      <div className="min-h-screen bg-[#f7f1e8] pt-20">
+        <div className="px-4 py-8 sm:px-6 lg:px-8">
+          <FadeSection className="pb-10">
+            <SectionHeader
+              eyebrow="Shop By Category"
+              title="Find the next book, tool, or school essential faster."
+              subtitle="Browse polished category shortcuts first, then move straight into curated shelves."
+            />
+
+            <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-3 scrollbar-none sm:mx-0 sm:grid sm:grid-cols-2 sm:px-0 lg:grid-cols-4">
+              {categories.map((category, index) => (
+                <CategoryCard
+                  key={`${category.slug}-${category.label}-${index}`}
+                  category={category}
+                  index={index}
+                />
+              ))}
+            </div>
+          </FadeSection>
+
+          <div className="space-y-14 pb-14">
+            <FadeSection>
+              <Suspense
+                fallback={
+                  <div className="py-10 text-center">
+                    Loading featured books...
+                  </div>
+                }
+              >
+                <FeaturedCarousel
+                  books={featuredBooks.length ? featuredBooks : undefined}
+                  title="Featured Books"
+                  eyebrow="Your Next Read"
+                  viewAllHref="/books"
+                />
+              </Suspense>
+            </FadeSection>
+
+            <FadeSection>
+              <Suspense
+                fallback={
+                  <div className="py-10 text-center">Loading stationery...</div>
+                }
+              >
+                <FeaturedCarousel
+                  books={stationery}
+                  title="Stationery"
+                  subtitle="Pens, notebooks, art supplies, and desk essentials for school or work."
+                  eyebrow="Write, Draw, Plan"
+                  viewAllHref="/category/stationery"
+                />
+              </Suspense>
+            </FadeSection>
+
+            <FadeSection>
+              <Suspense
+                fallback={
+                  <div className="py-10 text-center">
+                    Loading accessories...
+                  </div>
+                }
+              >
+                <FeaturedCarousel
+                  books={accessories}
+                  title="Accessories"
+                  subtitle="Practical extras and thoughtful gifts for readers and students."
+                  eyebrow="Reader Extras"
+                  viewAllHref="/category/accessories"
+                />
+              </Suspense>
+            </FadeSection>
+
+            <FadeSection>
+              <Suspense
+                fallback={
+                  <div className="py-10 text-center">Loading offers...</div>
+                }
+              >
+                <OffersCarousel />
+              </Suspense>
+            </FadeSection>
           </div>
-        </FadeSection>
 
-        <div className="space-y-14 pb-14">
-          <FadeSection>
-            <Suspense fallback={<div className="py-10 text-center">Loading featured books...</div>}>
-              <FeaturedCarousel
-                books={featuredBooks.length ? featuredBooks : undefined}
-                title="Featured Books"
-                eyebrow="Your Next Read"
-                viewAllHref="/books"
-              />
-            </Suspense>
-          </FadeSection>
-
-          <FadeSection>
-            <Suspense fallback={<div className="py-10 text-center">Loading stationery...</div>}>
-              <FeaturedCarousel
-                books={stationery}
-                title="Stationery"
-                subtitle="Pens, notebooks, art supplies, and desk essentials for school or work."
-                eyebrow="Write, Draw, Plan"
-                viewAllHref="/category/stationery"
-              />
-            </Suspense>
-          </FadeSection>
-
-          <FadeSection>
-            <Suspense fallback={<div className="py-10 text-center">Loading accessories...</div>}>
-              <FeaturedCarousel
-                books={accessories}
-                title="Accessories"
-                subtitle="Practical extras and thoughtful gifts for readers and students."
-                eyebrow="Reader Extras"
-                viewAllHref="/category/accessories"
-              />
-            </Suspense>
-          </FadeSection>
-
-          <FadeSection>
-            <Suspense fallback={<div className="py-10 text-center">Loading offers...</div>}>
-              <OffersCarousel />
-            </Suspense>
-          </FadeSection>
+          {/* Structured Data for Homepage */}
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebPage",
+              name: "Kiddle Bookshop",
+              description:
+                "Children's books, stationery, and educational resources",
+              url: "https://www.kiddlebookshop.com/",
+              mainEntity: {
+                "@type": "OnlineStore",
+                name: "Kiddle Bookshop",
+                url: "https://www.kiddlebookshop.com",
+              },
+            })}
+          </script>
         </div>
       </div>
-    </div>
+    </>
   );
 }
